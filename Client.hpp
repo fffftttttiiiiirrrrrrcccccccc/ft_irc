@@ -24,6 +24,9 @@ class Client{
 		void setUserName(std::string str);
 		void setPassword(std::string str);
 		void setSocketfd(int fd);
+		std::string getNickName();
+		std::string getUserName();
+		std::string getPassword();
 
 
 		//join

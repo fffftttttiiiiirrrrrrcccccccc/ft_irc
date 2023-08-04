@@ -34,8 +34,10 @@ int main(int ac, char** av){
 	int flags = fcntl(server.getSocket(), F_GETFL, 0);
 	fcntl(server.getSocket(), F_SETFL, flags | O_NONBLOCK);
 	server.addServerSocket();
+	
 	server.runServer();
-
+	return 0;
+}
 	
 	// int	serverSocket, clientSocket;
 	// struct sockaddr_in	serverAddr, clientAddr;
@@ -78,5 +80,5 @@ int main(int ac, char** av){
 	// }
 
 
-	return 0;
-}
+// 	return 0;
+// }

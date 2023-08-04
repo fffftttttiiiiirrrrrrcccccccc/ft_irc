@@ -1,4 +1,8 @@
 #include "Server.hpp"
+#include <string.h>
+
+Server::Server(){}
+Server::~Server(){}
 
 Server::Server(int port, char *pass) {
 	_port = port;
@@ -18,7 +22,9 @@ void Server::sockCreat() {
 		exit(1);
 	}
 
+
 	sockaddr_in serverAddr;
+	memset(&serverAddr, 0, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(_port);
 	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -28,6 +34,7 @@ void Server::sockCreat() {
 		exit(1);
 	}
 	_serverSocket = socketfd;
+	
 }
 
 
@@ -46,7 +53,8 @@ std::vector<struct pollfd> Server::getPollfd() {
 void	Server::runServer() {
 	int ret = 0;
 	while (1) {
-		ret = poll(_fds.data(), _fds.size() + 1,-1);
+		std::cout << "123" << std::endl;
+		ret = poll(&_fds.front(), _fds.size(), -1);
 		if (ret < 0) {
 			std::cout << "Poll error" << std::endl;
 			exit(1);
@@ -57,14 +65,43 @@ void	Server::runServer() {
 					std::cout << "Socket accept failed" << std::endl;
 					exit(1);
 			}
+			struct pollfd fd;
+			fd.events = POLLIN;
+			fd.fd = clientSocketfd;
+			fd.revents = 0;
+			_fds.push_back(fd);
 			_clients[clientSocketfd].setSocketfd(clientSocketfd);
 			_clients[clientSocketfd].setNickName("");
 			_clients[clientSocketfd].setUserName("");
 			_clients[clientSocketfd].setPassword("");
 		}
-
-		for (int i = 1; i <= _clients.size(); i++) {
-			
+		for (int i = 1; i <= _fds.size(); i++) {
+			std::cout << "123555"<<std::endl;
+			if (_fds[i].revents && POLLIN) {
+				char buffer[1024];
+				memset(buffer, 0, sizeof(buffer));
+				ret = recv(_fds[i].fd, buffer, sizeof(buffer), 0);
+				if (ret == -1 && errno != EAGAIN && errno != EWOULDBLOCK){
+					std::cout << "123"<<std::endl;
+					close(_fds[i].fd);
+					_clients.erase(_fds[i].fd);
+					std::cout << "recv function failed" << std::endl;
+					exit(1);
+				}
+				else if (ret == 0){
+					std::cout << "1234"<<std::endl;
+					std::cout << "Disconnet client" << _clients[_fds[i].fd].getNickName() << std::endl;
+					// client 삭제하는 함수 구현.
+					exit(1);
+				}
+				else {
+					std::cout << buffer <<std::endl;
+					buffer[ret] = '\0';
+					write(_fds[i].fd, buffer, ret);
+					// std::cout << "Get socket data : " << buffer << std::endl;
+					
+				}
+			}
 		}
 	}
 }
