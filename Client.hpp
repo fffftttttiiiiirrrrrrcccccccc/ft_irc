@@ -9,16 +9,21 @@ class Channel;
 
 class Client{
 	private:
-		std::vector<Channel &> _cha;
-		//vector<channel 객체> 채널리스트
-		// nickname;
-		// fd;
+		std::map<std::string, Channel &> _clientChannels;
+		std::string _nickName;
+		std::string _userName;
+		std::string _password;
+		int			_socketfd;
 		Client &operator=(const Client& rhs);
 		Client(const Client& src);
 
 	public:
 		Client();
 		virtual ~Client();
+		void setNickName(std::string str);
+		void setUserName(std::string str);
+		void setPassword(std::string str);
+		void setSocketfd(int fd);
 
 
 		//join
