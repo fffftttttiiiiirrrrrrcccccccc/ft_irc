@@ -53,7 +53,7 @@ std::vector<struct pollfd> Server::getPollfd() {
 void	Server::runServer() {
 	int ret = 0;
 	while (1) {
-		std::cout << "123" << std::endl;
+		// std::cout << "123" << std::endl;
 		ret = poll(&_fds.front(), _fds.size(), -1);
 		if (ret < 0) {
 			std::cout << "Poll error" << std::endl;
@@ -76,22 +76,22 @@ void	Server::runServer() {
 			_clients[clientSocketfd].setPassword("");
 		}
 		for (int i = 1; i <= _fds.size(); i++) {
-			std::cout << "123555"<<std::endl;
+			// std::cout << "123555"<<std::endl;
 			if (_fds[i].revents && POLLIN) {
 				char buffer[1024];
 				memset(buffer, 0, sizeof(buffer));
 				ret = recv(_fds[i].fd, buffer, sizeof(buffer), 0);
-				if (ret == -1 && errno != EAGAIN && errno != EWOULDBLOCK){
-					std::cout << "123"<<std::endl;
+				if (ret == -1){ //&& errno != EAGAIN && errno != EWOULDBLOCK){
+					// std::cout << "123"<<std::endl;
 					close(_fds[i].fd);
 					_clients.erase(_fds[i].fd);
 					std::cout << "recv function failed" << std::endl;
 					exit(1);
 				}
 				else if (ret == 0){
-					std::cout << "1234"<<std::endl;
+					// std::cout << "1234"<<std::endl;
 					std::cout << "Disconnet client" << _clients[_fds[i].fd].getNickName() << std::endl;
-					// client 삭제하는 함수 구현.
+					// client 삭제하는 함수 구현. exit 찍으면 안됨.
 					exit(1);
 				}
 				else {
