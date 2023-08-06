@@ -5,6 +5,7 @@
 #include "Channel.hpp"
 #include <iostream>
 #include <map>
+#include <string.h>
 #include <cstring>
 #include <unistd.h>
 #include <errno.h>
@@ -12,14 +13,16 @@
 #include <sys/socket.h>
 #include <poll.h>
 #include <vector>
+#include <sstream>
+
 
 class Client;
 class Channel;
 
 class Server{
 	private:
-		std::map<int, Client> _clients;
-		std::map<std::string, Channel> _channels;
+		std::map<int, Client> _clients; // fd, client
+		std::map<std::string, Channel> _channels; // channelName channel
 		std::string _password;
 		std::vector<struct pollfd> _fds;
 		int _port;
@@ -37,6 +40,12 @@ class Server{
 		void	addServerSocket();
 		std::vector<struct pollfd> getPollfd();
 		void	runServer();
+		void	get_command(std::string buffer, int fd);
+
+		void exitClient(int fd);
+		int findPollfdIndex(int fd);
+		void removeClient(int fd);
+		void commandQuit(std::string argument, int fd);
 };
 
 #endif

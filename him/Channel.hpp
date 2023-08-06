@@ -15,6 +15,8 @@ class Channel {
 		// map["str"];
 		// map["cli"];
 	public:
+		std::map<std::string, Client &> getClients();
+		void removeClinet(std::string nickName);
 
 
 };
