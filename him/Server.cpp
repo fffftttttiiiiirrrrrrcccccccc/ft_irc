@@ -1,5 +1,4 @@
 #include "Server.hpp"
-#include <string.h>
 
 Server::Server(){}
 Server::~Server(){}
@@ -75,33 +74,97 @@ void	Server::runServer() {
 			_clients[clientSocketfd].setUserName("");
 			_clients[clientSocketfd].setPassword("");
 		}
-		for (int i = 1; i <= _fds.size(); i++) {
+		for (unsigned long i = 1; i <= _fds.size(); i++) {
 			// std::cout << "123555"<<std::endl;
 			if (_fds[i].revents && POLLIN) {
 				char buffer[1024];
 				memset(buffer, 0, sizeof(buffer));
 				ret = recv(_fds[i].fd, buffer, sizeof(buffer), 0);
-				if (ret == -1){ //&& errno != EAGAIN && errno != EWOULDBLOCK){
+				if (ret == -1 && errno != EAGAIN && errno != EWOULDBLOCK){
 					// std::cout << "123"<<std::endl;
 					close(_fds[i].fd);
+					close(_serverSocket);
 					_clients.erase(_fds[i].fd);
 					std::cout << "recv function failed" << std::endl;
 					exit(1);
 				}
 				else if (ret == 0){
 					// std::cout << "1234"<<std::endl;
+					std::map<int, Client>::iterator it = _clients.find(_fds[i].fd);
+					_clients.erase(it);
+					close(_fds[i].fd);
+					_fds.erase(_fds.begin() + i);
 					std::cout << "Disconnet client" << _clients[_fds[i].fd].getNickName() << std::endl;
+					continue;
 					// client 삭제하는 함수 구현. exit 찍으면 안됨.
-					exit(1);
+					// exit(1);
 				}
 				else {
 					std::cout << buffer <<std::endl;
 					buffer[ret] = '\0';
+					get_command(buffer, _fds[i].fd);
 					write(_fds[i].fd, buffer, ret);
 					// std::cout << "Get socket data : " << buffer << std::endl;
+					
 					
 				}
 			}
 		}
 	}
+}
+
+void	Server::get_command(std::string buffer, int fd) {
+	std::istringstream	str(buffer);
+	std::string			command;
+	std::string			argument;
+
+	if (fd)
+		;
+	while (std::getline(str, command, ' ')){
+		if (command == "CAP")
+			continue;
+		std::getline(str, argument);
+		std::cout << "Command : " << command << std::endl;
+		std::cout << "Argument : " << argument << std::endl;
+		if(command == "quit" || command == "QUIT")
+			commandQuit(argument, fd);
+	}
+	
+	
+}
+
+void Server::exitClient(int fd) {
+	Client client = _clients[fd];
+	std::string nickName = client.getNickName();
+	std::map<std::string, Channel &> channel = client.getChannels();
+	// std::__1::map<int, Client>::iterator servetIt = _clients.find(fd);
+	for (std::map<std::string, Channel &>::iterator ChannelIt = channel.begin();
+		ChannelIt != client.getChannels().end(); ChannelIt++) {
+			Channel tmpChannel = ChannelIt->second;
+			tmpChannel.removeClinet(nickName);
+	}
+}
+
+void Server::removeClient(int fd) {
+	std::map<int, Client>::iterator it = _clients.find(fd);
+	_clients.erase(it);
+	close(fd);
+	int i = findPollfdIndex(fd);
+	_fds.erase(_fds.begin() + i);
+}
+
+int Server::findPollfdIndex(int targetFd) {
+    for (size_t i = 0; i < _fds.size(); ++i) {
+        if (_fds[i].fd == targetFd) {
+            return static_cast<int>(i);
+        }
+    }
+	std::cout << "can't find Pollfd Index" <<std::endl;
+    return -1; // Return -1 if the targetFd is not found in the vector
+}
+
+void	Server::commandQuit(std::string argument, int fd) {
+	if (argument != "")
+		;
+	close(fd);
 }

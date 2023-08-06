@@ -18,6 +18,10 @@ void Client::setSocketfd(int fd){
 	_socketfd = fd;
 }
 
+std::map<std::string, Channel &> Client::getChannels() {
+	return _clientChannels;
+}
+
 std::string Client::getNickName(){
 	return _nickName;
 }

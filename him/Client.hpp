@@ -14,16 +14,18 @@ class Client{
 		std::string _userName;
 		std::string _password;
 		int			_socketfd;
-		Client &operator=(const Client& rhs);
-		Client(const Client& src);
+		
+		// Client(const Client& src);
 
 	public:
 		Client();
+		// Client &operator=(const Client& rhs);
 		virtual ~Client();
 		void setNickName(std::string str);
 		void setUserName(std::string str);
 		void setPassword(std::string str);
 		void setSocketfd(int fd);
+		std::map<std::string, Channel &> getChannels();
 		std::string getNickName();
 		std::string getUserName();
 		std::string getPassword();
