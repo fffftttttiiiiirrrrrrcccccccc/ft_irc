@@ -27,6 +27,8 @@ private:
 	struct sockaddr_in client_addr;
 	static const int max_client = 50;
 	struct pollfd pollfds[max_client];
+  socklen_t client_addr_len;
+	char buf[100];
 // 	struct sockaddr_in {
 // 	short    sin_family;          // 주소 체계: AF_INET
 // 	u_short  sin_port;            // 16 비트 포트 번호, network byte order
