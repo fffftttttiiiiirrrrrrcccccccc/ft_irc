@@ -128,6 +128,10 @@ void	Server::get_command(std::string buffer, int fd) {
 			commandQuit(argument, fd);
 		else if(command == "join" || command == "JOIN")
 			commandJoin(argument, fd);
+		else if(command == "nick" || command == "NICK")
+			commandNick(argument, fd);
+		else if(command == "pass" || command == "PASS")
+			commandPass(argument, fd);
 	}
 	
 	
@@ -175,5 +179,30 @@ void	Server::commandQuit(std::string argument, int fd) {
 }
 
 void	Server::commandJoin(std::string argument, int fd) {
+	std::istringstream	str(argument);
 	
+	std::string			input;
+	std::string			channel;
+	std::string			password;
+
+	while (std::getline(str, input, ' ')) {
+		std::stringstream ss(input);
+		ss >> channel >> password;
+		std::map<std::string, Channel>::iterator channelIt = _channels.find(channel);
+		if (channelIt == _channels.end()) {
+			Channel newChannel;
+			_channels[channel] = newChannel;
+			_channels[channel].addClinetInChannel(_clients[fd].getNickName(), _clients[fd], password);
+			std::cout << "127" << std::endl;
+		}else { //채널이 있다면 채널의 isInvite가 트루인지 확인하여 접속
+			channelIt->second.addClinetInChannel(_clients[fd].getNickName(), _clients[fd], password);
+		}
+	}
+}
+
+void Server::commandNick(std::string argument, int fd) {
+	_clients[fd].setNickName(argument);
+}
+void Server::commandPass(std::string argument, int fd) {
+	_clients[fd].setPassword(argument);
 }

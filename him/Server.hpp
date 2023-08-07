@@ -47,6 +47,8 @@ class Server{
 		void removeClientInServer(int fd);
 		void commandQuit(std::string argument, int fd);
 		void commandJoin(std::string argument, int fd);
+		void commandNick(std::string argument, int fd);
+		void commandPass(std::string argument, int fd);
 };
 
 #endif
