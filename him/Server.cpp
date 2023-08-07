@@ -105,8 +105,6 @@ void	Server::runServer() {
 					get_command(buffer, _fds[i].fd);
 					write(_fds[i].fd, buffer, ret);
 					// std::cout << "Get socket data : " << buffer << std::endl;
-					
-					
 				}
 			}
 		}
@@ -128,6 +126,8 @@ void	Server::get_command(std::string buffer, int fd) {
 		std::cout << "Argument : " << argument << std::endl;
 		if(command == "quit" || command == "QUIT")
 			commandQuit(argument, fd);
+		else if(command == "join" || command == "JOIN")
+			commandJoin(argument, fd);
 	}
 	
 	
@@ -139,13 +139,14 @@ void Server::exitClient(int fd) {
 	std::map<std::string, Channel &> channel = client.getChannels();
 	// std::__1::map<int, Client>::iterator servetIt = _clients.find(fd);
 	for (std::map<std::string, Channel &>::iterator ChannelIt = channel.begin();
-		ChannelIt != client.getChannels().end(); ChannelIt++) {
+		ChannelIt != channel.end(); ChannelIt++) {
 			Channel tmpChannel = ChannelIt->second;
-			tmpChannel.removeClinet(nickName);
+			tmpChannel.removeClinetInChannel(nickName);
 	}
+	removeClientInServer(fd);
 }
 
-void Server::removeClient(int fd) {
+void Server::removeClientInServer(int fd) {
 	std::map<int, Client>::iterator it = _clients.find(fd);
 	_clients.erase(it);
 	close(fd);
@@ -153,6 +154,11 @@ void Server::removeClient(int fd) {
 	_fds.erase(_fds.begin() + i);
 }
 
+// QUIT 시 해야할 것
+// 1. Server에서 Client 삭제
+// 2. Client에서 들어가있는 Channel돌면서 Client삭제
+// 3. Client _fds 닫기
+// 4. Vector <poolfd> _fds 에서 Client fd 삭제
 int Server::findPollfdIndex(int targetFd) {
     for (size_t i = 0; i < _fds.size(); ++i) {
         if (_fds[i].fd == targetFd) {
@@ -164,7 +170,10 @@ int Server::findPollfdIndex(int targetFd) {
 }
 
 void	Server::commandQuit(std::string argument, int fd) {
-	if (argument != "")
-		;
-	close(fd);
+	exitClient(fd);
+	std::cout << argument << std::endl;
+}
+
+void	Server::commandJoin(std::string argument, int fd) {
+	
 }

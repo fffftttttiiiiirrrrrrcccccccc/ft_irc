@@ -44,8 +44,9 @@ class Server{
 
 		void exitClient(int fd);
 		int findPollfdIndex(int fd);
-		void removeClient(int fd);
+		void removeClientInServer(int fd);
 		void commandQuit(std::string argument, int fd);
+		void commandJoin(std::string argument, int fd);
 };
 
 #endif
