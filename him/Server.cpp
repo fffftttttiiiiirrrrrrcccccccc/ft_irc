@@ -69,19 +69,14 @@ void	Server::runServer() {
 			fd.fd = clientSocketfd;
 			fd.revents = 0;
 			_fds.push_back(fd);
-			_clients[clientSocketfd].setSocketfd(clientSocketfd);
-			_clients[clientSocketfd].setNickName("");
-			_clients[clientSocketfd].setUserName("");
-			_clients[clientSocketfd].setPassword("");
+			_clients[clientSocketfd].initClient(clientSocketfd);
 		}
 		for (unsigned long i = 1; i <= _fds.size(); i++) {
-			// std::cout << "123555"<<std::endl;
 			if (_fds[i].revents && POLLIN) {
 				char buffer[1024];
 				memset(buffer, 0, sizeof(buffer));
 				ret = recv(_fds[i].fd, buffer, sizeof(buffer), 0);
 				if (ret == -1 && errno != EAGAIN && errno != EWOULDBLOCK){
-					// std::cout << "123"<<std::endl;
 					close(_fds[i].fd);
 					close(_serverSocket);
 					_clients.erase(_fds[i].fd);
@@ -89,7 +84,6 @@ void	Server::runServer() {
 					exit(1);
 				}
 				else if (ret == 0){
-					// std::cout << "1234"<<std::endl;
 					std::map<int, Client>::iterator it = _clients.find(_fds[i].fd);
 					_clients.erase(it);
 					close(_fds[i].fd);
@@ -140,12 +134,12 @@ void	Server::get_command(std::string buffer, int fd) {
 void Server::exitClient(int fd) {
 	Client client = _clients[fd];
 	std::string nickName = client.getNickName();
-	std::map<std::string, Channel &> channel = client.getChannels();
+	std::map<std::string, Channel *> channel = client.getChannels();
 	// std::__1::map<int, Client>::iterator servetIt = _clients.find(fd);
-	for (std::map<std::string, Channel &>::iterator ChannelIt = channel.begin();
+	for (std::map<std::string, Channel *>::iterator ChannelIt = channel.begin();
 		ChannelIt != channel.end(); ChannelIt++) {
-			Channel tmpChannel = ChannelIt->second;
-			tmpChannel.removeClinetInChannel(nickName);
+			Channel *tmpChannel = ChannelIt->second;
+			tmpChannel->removeClinetInChannel(fd);
 	}
 	removeClientInServer(fd);
 }
@@ -192,10 +186,10 @@ void	Server::commandJoin(std::string argument, int fd) {
 		if (channelIt == _channels.end()) {
 			Channel newChannel;
 			_channels[channel] = newChannel;
-			_channels[channel].addClinetInChannel(_clients[fd].getNickName(), _clients[fd], password);
+			_channels[channel].addClinetInChannel(fd, &_clients[fd], password);
 			std::cout << "127" << std::endl;
 		}else { //채널이 있다면 채널의 isInvite가 트루인지 확인하여 접속
-			channelIt->second.addClinetInChannel(_clients[fd].getNickName(), _clients[fd], password);
+			channelIt->second.addClinetInChannel(fd, &_clients[fd], password);
 		}
 	}
 }

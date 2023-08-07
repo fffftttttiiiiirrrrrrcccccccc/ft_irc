@@ -11,12 +11,12 @@ Channel::Channel(){
 		_LimitClientNum = 50;
 }
 
-std::map<std::string, Client &> Channel::getClients() {
+std::map<int, Client *> Channel::getClients() {
 	return _clients;
 }
 
-void Channel::addClinetInChannel(std::string nickName, Client& client, std::string password) {
-	std::map<std::string, Client &>::iterator it = _clients.find(nickName);
+void Channel::addClinetInChannel(int fd, Client* client, std::string password) {
+	std::map<int, Client *>::iterator it = _clients.find(fd);
 	if (it == _clients.end()) {
 		if (_isInviteOnly)
 			return ;
@@ -25,13 +25,14 @@ void Channel::addClinetInChannel(std::string nickName, Client& client, std::stri
 		if (_isLimit && _clients.size() == _LimitClientNum)
 			return ;
 		
-		_clients[nickName] = client;
+		std::cout << "!23" << std::endl;
+		_clients[fd] = client;
 		std::cout << "ccc" << std::endl;
 	}
 }
 
-void Channel::removeClinetInChannel(std::string nickName) {
-	std::map<std::string, Client &>::iterator it = _clients.find(nickName);
+void Channel::removeClinetInChannel(int fd) {
+	std::map<int, Client *>::iterator it = _clients.find(fd);
     if (it != _clients.end())
 		_clients.erase(it);
 }
@@ -61,14 +62,14 @@ void	Channel::setLimitClientNum(int num){
 	_LimitClientNum = num;
 }
 
-void Channel::removeOpClient(std::string nickname){
-	std::vector<std::string>::iterator it = std::find(_opList.begin(), _opList.end(), nickname);
+void Channel::removeOpClient(int fd){
+	std::vector<int>::iterator it = std::find(_opList.begin(), _opList.end(), fd);
 	if (it != _opList.end())
 		_opList.erase(it);
 }
 
-void Channel::addOpClinet(std::string nickname){
-	std::vector<std::string>::iterator it = std::find(_opList.begin(), _opList.end(), nickname);
+void Channel::addOpClinet(int fd){
+	std::vector<int>::iterator it = std::find(_opList.begin(), _opList.end(), fd);
 	if (it != _opList.end())
-		_opList.push_back(nickname);
+		_opList.push_back(fd);
 }

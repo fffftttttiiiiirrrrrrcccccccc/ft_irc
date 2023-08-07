@@ -9,7 +9,7 @@ class Client;
 
 class Channel {
 	private:
-		std::map<std::string, Client &> _clients; //<nickname, cli 참조>
+		std::map<int , Client *> _clients; //<fd, cli 참조>
 		bool	_isInviteOnly; // 초대한 사람만 들어갈 수 있음. /mode #채널명 +i
 
 		bool		_isTopic; // op만 topic설정 가능 /mode #채널명 +t
@@ -19,16 +19,16 @@ class Channel {
 		std::string	_password; // 채널에 비밀번호 설정 /mode #채널명 +k password
 
 		bool	_isOperator; // op권한을 줄 수있음 /mode #채널명 +o nickName
-		std::vector<std::string> _opList; //op권한 클라이언트 리스트
+		std::vector<int> _opList; //op권한 클라이언트 리스트
 
 		bool	_isLimit; // 제한된 인원수만 입장 가능 /mode #채널명 +l number
 		unsigned long		_LimitClientNum; // 제한된 인원수만 입장 가능 /mode #채널명 +l number
 
 	public:
 		Channel();
-		std::map<std::string, Client &> getClients();
-		void	addClinetInChannel(std::string nickName, Client& client, std::string password);
-		void 	removeClinetInChannel(std::string nickName);
+		std::map<int, Client *> getClients();
+		void	addClinetInChannel(int fd, Client* client, std::string password);
+		void 	removeClinetInChannel(int fd);
 
 		void	setIsInviteOnly(bool isInviteOnly);
 		void	setIsTopic(bool isTopic);
@@ -36,8 +36,8 @@ class Channel {
 		void	setIsOperator(bool isOperator);
 		void	setIsLimit(bool isLimit);
 
-		void 	addOpClinet(std::string nickname);
-		void	removeOpClient(std::string nickname);
+		void 	addOpClinet(int fd);
+		void	removeOpClient(int fd);
 		void	setPassword(std::string password);
 		void	setTopic(std::string topic);
 		void	setLimitClientNum(int num);

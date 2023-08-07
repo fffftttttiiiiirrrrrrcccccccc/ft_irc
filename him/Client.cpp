@@ -4,6 +4,14 @@ Client::Client(){};
 
 Client::~Client(){};
 
+void Client::initClient(int fd) {
+    _clientChannels.clear();
+	setFd(fd);
+	setNickName("");
+	setUserName("");
+	setPassword("");
+}
+
 void Client::setNickName(std::string str){
 	_nickName = str;
 }
@@ -14,11 +22,11 @@ void Client::setPassword(std::string str){
 	_password = str;
 }
 
-void Client::setSocketfd(int fd){
-	_socketfd = fd;
+void Client::setFd(int fd){
+	_fd = fd;
 }
 
-std::map<std::string, Channel &> Client::getChannels() {
+std::map<std::string, Channel *> Client::getChannels() {
 	return _clientChannels;
 }
 
