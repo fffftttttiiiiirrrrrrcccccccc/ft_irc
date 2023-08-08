@@ -11,6 +11,7 @@ void Client::initClient(int fd) {
 	setUserName("");
 	setPassword("");
 	_tmpCmd = "";
+	_isLogin = false;
 }
 
 void Client::setTmpCmd(std::string str) {
@@ -18,17 +19,20 @@ void Client::setTmpCmd(std::string str) {
 }
 
 void Client::addTmpCmd(std::string str) {
-	_tmpCmd += str;
+	_tmpCmd += str + " ";
 }
 
 void Client::setNickName(std::string str){
 	_nickName = str;
+	welcomeMsg();
 }
 void Client::setUserName(std::string str){
 	_userName = str;
+	welcomeMsg();
 }
 void Client::setPassword(std::string str){
 	_password = str;
+	welcomeMsg();
 }
 
 void Client::setFd(int fd){
@@ -50,4 +54,12 @@ std::string Client::getUserName(){
 }
 std::string Client::getPassword(){
 	return _password;
+}
+
+void Client::welcomeMsg(){
+	if (_nickName != "" && _password != "" && _userName != "" && !_isLogin){
+		const char* motdEndMsg = "001 <redic> :Welcome to the Internet Relay Network\r\n";
+		send(_fd, motdEndMsg, strlen(motdEndMsg), 0);
+		_isLogin = true;
+	}
 }

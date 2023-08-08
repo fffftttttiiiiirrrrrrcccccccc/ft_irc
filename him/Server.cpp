@@ -70,6 +70,13 @@ void	Server::runServer() {
 			fd.revents = 0;
 			_fds.push_back(fd);
 			_clients[clientSocketfd].initClient(clientSocketfd);
+			const char* motdStartMsg = "375 <redic> :- Welcome to our IRC server.\r\n";
+			send(fd.fd, motdStartMsg, strlen(motdStartMsg), 0);
+			const char* motdMsg1 = "372 <redic> :- This is the Message of the Day.\r\n";
+			send(fd.fd, motdMsg1, strlen(motdMsg1), 0);
+			const char* motdEndMsg = "376 <redic> :End of MOTD command.\r\n";
+			send(fd.fd, motdEndMsg, strlen(motdEndMsg), 0);
+
 		}
 		for (unsigned long i = 1; i <= _fds.size(); i++) {
 			if (_fds[i].revents && POLLIN) {

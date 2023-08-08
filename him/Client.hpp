@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include "Channel.hpp"
+#include <sys/socket.h>
 
 class Channel;
 
@@ -15,6 +16,7 @@ class Client{
 		std::string _password;
 		int				_fd;
 		std::string _tmpCmd;
+		bool			_isLogin;
 		// Client(const Client& src);
 
 	public:
@@ -34,6 +36,8 @@ class Client{
 		std::string getUserName();
 		std::string getPassword();
 		std::string getTmpCmd();
+
+		void welcomeMsg();
 
 
 		//join
