@@ -14,6 +14,7 @@ class Client{
 		std::string _userName;
 		std::string _password;
 		int				_fd;
+		std::string _tmpCmd;
 		// Client(const Client& src);
 
 	public:
@@ -25,11 +26,14 @@ class Client{
 		void setNickName(std::string str);
 		void setUserName(std::string str);
 		void setPassword(std::string str);
+		void setTmpCmd(std::string str);
+		void addTmpCmd(std::string str);
 		int getFd();
 		std::map<std::string, Channel *> getChannels();
 		std::string getNickName();
 		std::string getUserName();
 		std::string getPassword();
+		std::string getTmpCmd();
 
 
 		//join

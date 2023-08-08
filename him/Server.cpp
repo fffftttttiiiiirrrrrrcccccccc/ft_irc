@@ -73,9 +73,9 @@ void	Server::runServer() {
 		}
 		for (unsigned long i = 1; i <= _fds.size(); i++) {
 			if (_fds[i].revents && POLLIN) {
-				char buffer[1024];
-				memset(buffer, 0, sizeof(buffer));
-				ret = recv(_fds[i].fd, buffer, sizeof(buffer), 0);
+				char buffer[1025];
+				memset(buffer, 0, 1025);
+				ret = recv(_fds[i].fd, buffer, 1024, 0);
 				if (ret == -1 && errno != EAGAIN && errno != EWOULDBLOCK){
 					close(_fds[i].fd);
 					close(_serverSocket);
@@ -94,11 +94,11 @@ void	Server::runServer() {
 					// exit(1);
 				}
 				else {
-					std::cout << buffer <<std::endl;
-					buffer[ret] = '\0';
-					get_command(buffer, _fds[i].fd);
-					write(_fds[i].fd, buffer, ret);
-					// std::cout << "Get socket data : " << buffer << std::endl;
+						std::cout << buffer <<std::endl;
+						buffer[ret] = '\0';
+						get_command(buffer, _fds[i].fd);
+						write(_fds[i].fd, buffer, ret);
+						// std::cout << "Get socket data : " << buffer << std::endl;
 				}
 			}
 		}
@@ -106,12 +106,30 @@ void	Server::runServer() {
 }
 
 void	Server::get_command(std::string buffer, int fd) {
-	std::istringstream	str(buffer);
-	std::string			command;
-	std::string			argument;
 
 	if (fd)
 		;
+	std::cout << buffer.length() << std::endl;
+	if (buffer.length() >= 2) {
+		if (buffer[buffer.length() - 2] != '\r' && buffer[buffer.length() - 1] != '\n') {
+			std::cout << buffer << std::endl;
+			_clients[fd].addTmpCmd(buffer);
+			return ;
+		}
+		else if (_clients[fd].getTmpCmd() != "") {
+			_clients[fd].addTmpCmd(buffer);
+			buffer = _clients[fd].getTmpCmd();
+			_clients[fd].setTmpCmd("");
+		}
+	}
+	else if (_clients[fd].getTmpCmd() != "") {
+		_clients[fd].addTmpCmd(buffer);
+		buffer = _clients[fd].getTmpCmd();
+		_clients[fd].setTmpCmd("");
+	}
+	std::istringstream	str(buffer);
+	std::string			command;
+	std::string			argument;
 	while (std::getline(str, command, ' ')){
 		if (command == "CAP")
 			continue;
@@ -199,7 +217,7 @@ void	Server::commandJoin(std::string argument, int fd) {
 void Server::commandNick(std::string argument, int fd) {
 	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++) {
 		if (it->second.getNickName() == argument)
-			return ;
+			exit(1);
 	}
 	_clients[fd].setNickName(argument);
 }

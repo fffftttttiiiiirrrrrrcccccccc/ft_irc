@@ -10,6 +10,15 @@ void Client::initClient(int fd) {
 	setNickName("");
 	setUserName("");
 	setPassword("");
+	_tmpCmd = "";
+}
+
+void Client::setTmpCmd(std::string str) {
+	_tmpCmd = str;
+}
+
+void Client::addTmpCmd(std::string str) {
+	_tmpCmd += str;
 }
 
 void Client::setNickName(std::string str){
@@ -28,6 +37,9 @@ void Client::setFd(int fd){
 
 std::map<std::string, Channel *> Client::getChannels() {
 	return _clientChannels;
+}
+std::string Client::getTmpCmd(){
+	return _tmpCmd;
 }
 
 std::string Client::getNickName(){
