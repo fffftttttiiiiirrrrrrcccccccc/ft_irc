@@ -126,6 +126,8 @@ void	Server::get_command(std::string buffer, int fd) {
 			commandNick(argument, fd);
 		else if(command == "pass" || command == "PASS")
 			commandPass(argument, fd);
+		else if(command == "user" || command == "USER")
+			commandUser(argument, fd);	
 	}
 	
 	
@@ -195,8 +197,21 @@ void	Server::commandJoin(std::string argument, int fd) {
 }
 
 void Server::commandNick(std::string argument, int fd) {
+	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++) {
+		if (it->second.getNickName == argument)
+			return ;
+	}
 	_clients[fd].setNickName(argument);
 }
+
 void Server::commandPass(std::string argument, int fd) {
 	_clients[fd].setPassword(argument);
+}
+
+void Server::commandUser(std::string argument, int fd) {
+	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++) {
+		if (it->second.getUserName == argument)
+			return ;
+	}
+	_clients[fd].setUsername(argument);
 }
