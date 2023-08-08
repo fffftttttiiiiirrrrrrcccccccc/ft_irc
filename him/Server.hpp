@@ -49,14 +49,14 @@ class Server{
 		//구현완료
 
 		//구현중
-		void commandQuit(std::string argument, int fd); // 서버와 접속 끊기
+		void commandQuit(std::string argument, int fd); // 서버와 접속 끊기 /quit 메세지 (메세지는 서버에 남기는 용도)
 		void commandJoin(std::string argument, int fd); // 채널이 존재하는지(어떤 타입 인지), 없다면 생성 오퍼 주기
 		void commandNick(std::string argument, int fd); // 다른 클라이언트 중에 닉네임 중복여부 확인
 		void commandPass(std::string argument, int fd); //
 		void commandUser(std::string argument, int fd); // 다른 클라이언트 중에 유저 중복여부 확인
-
+		void commandPart(std::string argument, int fd); //채널에서 나오면서  op인지도 확인. /part #채널명 메세지
 		//구현해야함
-		void commandPart(std::string argument, int fd); //채널에서 나오면서 op인지도 확인.
+		
 		void commandExit(std::string argument, int fd); //접속끊고 클라이언트도 종료
 		void commandDisconnect(std::string argument, int fd); //quit와 동일하지만 메세지는 기본메세지 
 		void commandPrivmsg(std::string argument, int fd); // 이건 메세지 전달

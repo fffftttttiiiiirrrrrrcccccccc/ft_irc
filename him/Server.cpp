@@ -171,7 +171,7 @@ int Server::findPollfdIndex(int targetFd) {
 
 void	Server::commandQuit(std::string argument, int fd) {
 	exitClient(fd);
-	std::cout << argument << std::endl;
+	std::cout << fd << ": " << argument << std::endl;
 }
 
 void	Server::commandJoin(std::string argument, int fd) {
@@ -214,4 +214,20 @@ void Server::commandUser(std::string argument, int fd) {
 			return ;
 	}
 	_clients[fd].setUsername(argument);
+}
+
+
+void commandPart(std::string argument, int fd) {
+	std::istringstream	str(argument);
+	
+	std::string			channel;
+	std::string			msg;
+
+	str >> channel >> msg;
+	std::map<std::string, Channel>::iterator it = _channels.find(channel);
+	if (it != _channels.end())
+		it->second.partClinet(fd, msg);
+	else {
+		; //채널이 없을 때 예외처리
+	}
 }
