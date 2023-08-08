@@ -56,6 +56,10 @@ std::string Client::getPassword(){
 	return _password;
 }
 
+int Client::getFd(){
+	return _fd;
+} //추가
+
 void Client::welcomeMsg(){
 	if (_nickName != "" && _password != "" && _userName != "" && !_isLogin){
 		const char* motdEndMsg = "001 <redic> :Welcome to the Internet Relay Network\r\n";

@@ -11,7 +11,7 @@ class Channel;
 class Client{
 	private:
 		std::map<std::string, Channel *> _clientChannels;
-		std::string _nickName;
+		std::string _nickName; 
 		std::string _userName;
 		std::string _password;
 		int				_fd;

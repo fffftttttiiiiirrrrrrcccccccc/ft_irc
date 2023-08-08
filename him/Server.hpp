@@ -35,6 +35,7 @@ class Server{
 		Server(const Server &src);
 		Server &operator=(const Server &rhs);
 
+		void send_message(Client &client, int rpl_num); //추가
 		void	sockCreat();
 		int		getSocket();
 		void	addServerSocket();

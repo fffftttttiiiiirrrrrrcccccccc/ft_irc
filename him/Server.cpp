@@ -1,5 +1,7 @@
 #include "Server.hpp"
 
+const static std::string server_name = "irccc"; //추가
+
 Server::Server(){}
 Server::~Server(){}
 
@@ -256,3 +258,12 @@ void Server::commandPart(std::string argument, int fd) {
 		; //채널이 없을 때 예외처리
 	}
 }
+
+void Server::send_message(Client &client, int rpl_num) {
+	std::string print_msg = ":";
+	print_msg = print_msg + server_name + " " + std::to_string(rpl_num) + " " + client.getNickName() + " "; //여기까지는 확정인데, rpl에 따라 살짝씩 다름
+	std::string motdStartMsg = "servername: 375 user_name :- Welcome to our IRC server.\r\n";
+	send(client.getFd(),  motdStartMsg.c_str(), strlen(motdStartMsg.c_str()), 0);
+}
+//추가
+//pass랑 user는 두번 못부름
