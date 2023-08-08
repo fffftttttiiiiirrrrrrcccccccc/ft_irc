@@ -198,7 +198,7 @@ void	Server::commandJoin(std::string argument, int fd) {
 
 void Server::commandNick(std::string argument, int fd) {
 	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++) {
-		if (it->second.getNickName == argument)
+		if (it->second.getNickName() == argument)
 			return ;
 	}
 	_clients[fd].setNickName(argument);
@@ -210,14 +210,14 @@ void Server::commandPass(std::string argument, int fd) {
 
 void Server::commandUser(std::string argument, int fd) {
 	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++) {
-		if (it->second.getUserName == argument)
+		if (it->second.getUserName() == argument)
 			return ;
 	}
-	_clients[fd].setUsername(argument);
+	_clients[fd].setUserName(argument);
 }
 
 
-void commandPart(std::string argument, int fd) {
+void Server::commandPart(std::string argument, int fd) {
 	std::istringstream	str(argument);
 	
 	std::string			channel;
