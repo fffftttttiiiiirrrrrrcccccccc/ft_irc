@@ -82,3 +82,17 @@ void Channel::partClinet(int fd, std::string msg){
 		;// 채널에 메세지 남기기
 
 }
+
+bool Channel::isOpClient(int fd){
+	std::vector<int>::iterator it = find(_opList.begin(), _opList.begin(), fd);
+	if (it == _opList.end())
+		return false;
+	return true;
+}
+
+bool Channel::isInClinet(int fd) {
+	std::map<int, Client *>::iterator it = find(_clients.begin(), _clients.begin(), fd);
+	if (it == _clients.end())
+		return false;
+	return true;
+}

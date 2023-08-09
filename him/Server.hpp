@@ -47,6 +47,7 @@ class Server{
 		void removeClientInServer(int fd);
 
 		Client *findClient(std::string nickName);
+		std::vector<std::string> splitComma(std::string str);
 
 		//구현완료
 
@@ -58,12 +59,11 @@ class Server{
 		void commandUser(std::string argument, int fd); // 다른 클라이언트 중에 유저 중복여부 확인
 		void commandPart(std::string argument, int fd); //채널에서 나오면서  op인지도 확인. /part #채널명 메세지
 		void commandPrivmsg(std::string argument, int fd); // 이건 메세지 전달
+		void commandNotice(std::string argument, int fd); // 이건 공지로 메세지 전달 이건 에러처리가 없음.
+		void commandKick(std::string argument, int fd); // /kick #채널명 닉네임 메시지
 		//구현해야함
 
 		
-		
-		void commandNotice(std::string argument, int fd); // 이건 공지로 채널에 메세지 전달
-		void commandKick(std::string argument, int fd); // /kick #채널명 닉네임 메시지
 		void commandInvite(std::string argument, int fd); // 초대하기  /invite 닉네임 #채널명
 		void commandTopic(std::string argument, int fd); // topic설정 채널 모드 확인  op인지 확인
 		void commandMode(std::string argument, int fd); // 채널 모드 설정 op권한 있어야 함.

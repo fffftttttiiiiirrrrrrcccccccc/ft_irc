@@ -42,6 +42,9 @@ class Channel {
 		void	setTopic(std::string topic);
 		void	setLimitClientNum(int num);
 
+		bool	isOpClient(int fd);
+		bool	isInClinet(int fd);
+
 		void	partClinet(int fd, std::string msg); // 채널 메세지 보내기 추가해야함.
 
 		//invite함수 추가해야함.
