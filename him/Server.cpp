@@ -152,7 +152,7 @@ void	Server::get_command(std::string buffer, int fd) {
 		else if(command == "pass" || command == "PASS")
 			commandPass(argument, fd);
 		else if(command == "user" || command == "USER")
-			commandUser(argument, fd);	
+			commandUser(argument, fd);
 	}
 	
 	
@@ -255,4 +255,48 @@ void Server::commandPart(std::string argument, int fd) {
 	else {
 		; //채널이 없을 때 예외처리
 	}
+}
+
+void Server::commandPrivmsg(std::string argument, int fd) {
+	std::istringstream	str(argument);
+	
+	std::string			target;
+	std::string			msg;
+	Client *tmpClient;
+	std::string tmpMsg;
+
+	str >> target >> msg;
+	
+	if (target == "" || msg == "")
+		return ;
+	if (target[0] == '#'){
+		std::map<std::string, Channel>::iterator tmpChannel = _channels.find(target);
+		if (tmpChannel == _channels.end())
+			return ;
+		
+		for (std::map<int, Client *>::iterator it = tmpChannel->second.getClients().begin();
+			it != tmpChannel->second.getClients().end(); it++){
+				std::string tmpMsg = ":" + _clients[fd].getNickName() + " PRIVMSG " + target + " :" + msg + "\r\n";
+				send(it->second->getFd(), &tmpMsg, tmpMsg.length(), 0);
+			}
+		
+	}
+	else {
+		tmpClient = findClient(target);
+		if (tmpClient == NULL)
+			return ;
+			// ":IRCserv 403 " + getList()[j].getNickname() + " " + nick + " :No such channel\r\n";
+		tmpMsg = ":" + _clients[fd].getNickName() + " PRIVMSG " + target + " :" + msg + "\r\n";
+		send(tmpClient->getFd(), &tmpMsg, tmpMsg.length(), 0);
+
+	}
+}
+
+Client *Server::findClient(std::string nickName) {
+
+	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++){
+		if (it->second.getNickName() == nickName)
+			return &it->second;
+	}
+	return NULL;
 }

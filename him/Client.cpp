@@ -6,10 +6,10 @@ Client::~Client(){};
 
 void Client::initClient(int fd) {
     _clientChannels.clear();
-	setFd(fd);
-	setNickName("");
-	setUserName("");
-	setPassword("");
+	_fd = fd;
+	_nickName = "";
+	_userName = "";
+	_password = "";
 	_tmpCmd = "";
 	_isLogin = false;
 }
