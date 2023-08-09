@@ -3,6 +3,7 @@
 
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "Message.hpp" //추가
 #include <iostream>
 #include <map>
 #include <string.h>
