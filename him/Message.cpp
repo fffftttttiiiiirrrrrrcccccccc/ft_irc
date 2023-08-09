@@ -36,7 +36,11 @@ const char * Message::message_sender(){
     print_msg = print_msg + ":- " + " 안녕하셨쎄요~";
 
   else if (rpl_num == 376)
-    print_msg = print_msg + ":End of MOTD command";  
+    print_msg = print_msg + ":End of MOTD command"; //motd도 합치면 될듯
+
+  else if (rpl_num == 461)
+    print_msg = print_msg + ":- " + " 안녕하셨쎄요~";
+
   const char * return_val = print_msg.c_str();
   return return_val;
 }

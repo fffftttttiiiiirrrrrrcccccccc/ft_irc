@@ -7,7 +7,7 @@ Client::~Client(){};
 void Client::initClient(int fd) {
     _clientChannels.clear();
 	setFd(fd);
-	setNickName("");
+	setNickName("*");//nickname 초기화 "*"로
 	setUserName("");
 	setPassword("");
 	_tmpCmd = "";
