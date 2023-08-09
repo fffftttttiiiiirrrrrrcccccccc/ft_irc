@@ -32,6 +32,8 @@ class Channel {
 		Channel(std::string channelName);
 		std::map<int, Client *> getClients();
 		std::string getChannelName();
+		std::string getTopic();
+		std::string getPassword();
 		void	addClinetInChannel(int fd, Client* client, std::string password);
 		void 	removeClinetInChannel(int fd);
 
@@ -50,6 +52,8 @@ class Channel {
 		bool	getIsLimitMode();
 		bool	getIsOperatorMode();
 		bool	getIsInviteMode();
+		bool	getIsTopicMode();
+		bool	getIsKeyMode();
 
 		bool	isJoinalbe();
 

@@ -138,6 +138,7 @@ void	Server::get_command(std::string buffer, int fd) {
 	std::string			command;
 	std::string			argument;
 	while (std::getline(str, command, ' ')){
+		_command = command;
 		if (command == "CAP")
 			continue;
 		std::getline(str, argument);
@@ -161,6 +162,7 @@ void	Server::get_command(std::string buffer, int fd) {
 			commandUser(argument, fd);
 		else if(command == "kick" || command == "KICK")
 			commandUser(argument, fd);
+		_command = "";
 	}
 	
 	
@@ -210,21 +212,34 @@ void	Server::commandQuit(std::string argument, int fd) {
 void	Server::commandJoin(std::string argument, int fd) {
 	std::istringstream	str(argument);
 	
-	std::string			input;
 	std::string			channel;
 	std::string			password;
 
-	while (std::getline(str, input, ' ')) {
-		std::stringstream ss(input);
-		ss >> channel >> password;
-		std::map<std::string, Channel>::iterator channelIt = _channels.find(channel);
-		if (channelIt == _channels.end()) {
+	str >> channel >> password;//ERR_NEEDMOREPARAMS (461): 인자가 부족
+	if (channel == "")
+		;
+	std::vector<std::string> vecChannel = splitComma(channel);
+	std::vector<std::string> vecPassword = splitComma(password);
+	for (int i = 0 ; i < vecChannel.size(); i++) {
+		std::map<std::string, Channel>::iterator chIt = _channels.find(vecChannel[i]);
+		if (chIt == _channels.end()) { //채널이 없으므로 만들고 넣어줌
 			Channel newChannel(channel);
 			_channels[channel] = newChannel;
-			_channels[channel].addClinetInChannel(fd, &_clients[fd], password);
-			std::cout << "127" << std::endl;
-		}else { //채널이 있다면 채널의 isInvite가 트루인지 확인하여 접속
-			channelIt->second.addClinetInChannel(fd, &_clients[fd], password);
+			_channels[channel].addClinetInChannel(fd, &_clients[fd], vecPassword[i]);
+			_clients[fd].addChannel(&_channels[channel]);
+		}
+		else{
+			if (chIt->second.isInClinet(fd)) //ERR_NOTONCHANNEL (442): 사용자가 이미 채널에 있음
+				return ;
+			if (chIt->second.getIsInviteMode()) //ERR_INVITEONLYCHAN (473):초대만 가능모드
+				return ;
+			if (chIt->second.getIsLimitMode() && !chIt->second.isJoinalbe()) //ERR_CHANNELISFULL (471): 인원이 꽉참
+				return ;
+			if (chIt->second.getIsKeyMode() && chIt->second.getPassword() != vecPassword[i])  //ERR_BADCHANNELKEY (475):  비밀번호 틀림
+				return ;
+			chIt->second.addClinetInChannel(fd, &_clients[fd], vecPassword[i]);
+			_clients[fd].addChannel(&chIt->second);
+			//RPL_TOPIC (332): 채널의 토픽을 클라이언트에게 전달합니다. 채널의 토픽 정보를 알려주는 역할을 합니다.
 		}
 	}
 }
@@ -396,13 +411,43 @@ void Server::commandInvite(std::string argument, int fd) {
 	else{
 		if (!chIt->second.isJoinalbe()) //인원수가 가득 참.
 			return ;
-		
 	}
 	//초대메세지 보내기
 	chIt->second.inviteClient(tmpClient->getFd(), tmpClient);
 	tmpClient->addChannel(&chIt->second);
 
 	
+}
+
+void Server::commandTopic(std::string argument, int fd){
+		std::istringstream	str(argument);
+
+	std::string			channel;
+	std::string			topic;
+
+	if (channel == "") //ERR_NEEDMOREPARAMS (461): 매개변수 부족
+		return ;
+
+	std::map<std::string, Channel>::iterator chIt = _channels.find(channel);
+	if (chIt == _channels.end()) //ERR_NOSUCHCHANNEL (403) 채널이없음
+		return ;
+	if (!chIt->second.isInClinet(fd)) //ERR_NOTONCHANNEL (442): 사용자가 채널에 없음
+		return ;
+	if (topic == "") {
+		if (chIt->second.getTopic() == ""){
+			// RPL_NOTOPIC (331): 채널에 토픽이 설정되어 있지 않을 때, 해당 채널의 토픽이 없음을 클라이언트에게 알려줍니다.
+		}
+		else {
+			// RPL_TOPIC (332): 채널의 토픽을 클라이언트에게 전달합니다. 채널의 토픽 정보를 알려주는 역할을 합니다.
+		}
+	}
+	else {
+		if (!chIt->second.isOpClient(fd)) //ERR_CHANOPRIVSNEEDED (482) 사용자가 op가 아님
+			return ;
+		if (!chIt->second.getIsTopicMode()) //ERR_NOCHANMODES (477): 채널 이 토픽모드가 아님?
+			return ;
+		chIt->second.setTopic(topic);
+	}
 }
 
 std::vector<std::string> Server::splitComma(std::string argument){

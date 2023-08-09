@@ -7,8 +7,8 @@ Client::~Client(){};
 void Client::initClient(int fd) {
     _clientChannels.clear();
 	_fd = fd;
-	_nickName = "";
-	_userName = "";
+	_nickName = "*";
+	_userName = "*";
 	_password = "";
 	_tmpCmd = "";
 	_isLogin = false;
@@ -57,7 +57,7 @@ std::string Client::getPassword(){
 }
 
 void Client::welcomeMsg(){
-	if (_nickName != "" && _password != "" && _userName != "" && !_isLogin){
+	if (_nickName != "*" && _password != "" && _userName != "*" && !_isLogin){
 		const char* motdEndMsg = "001 <redic> :Welcome to the Internet Relay Network\r\n";
 		send(_fd, motdEndMsg, strlen(motdEndMsg), 0);
 		_isLogin = true;

@@ -28,6 +28,14 @@ std::map<int, Client *> Channel::getClients() {
 	return _clients;
 }
 
+std::string Channel::getTopic(){
+	return _topic;
+}
+
+std::string Channel::getPassword() {
+	return _password;
+}
+
 void Channel::addClinetInChannel(int fd, Client* client, std::string password) {
 	std::map<int, Client *>::iterator it = _clients.find(fd);
 	if (it == _clients.end()) {
@@ -118,6 +126,14 @@ bool	Channel::getIsOperatorMode(){
 }
 bool	Channel::getIsInviteMode(){
 	return _isInviteOnly;
+}
+
+bool	Channel::getIsTopicMode(){
+	return _isTopic;
+}
+
+bool	Channel::getIsKeyMode(){
+	return _isKey;
 }
 
 bool	Channel::isJoinalbe() {
