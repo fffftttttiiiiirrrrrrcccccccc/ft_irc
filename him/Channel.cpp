@@ -105,14 +105,14 @@ void Channel::partClinet(int fd, std::string msg){
 }
 
 bool Channel::isOpClient(int fd){
-	std::vector<int>::iterator it = find(_opList.begin(), _opList.begin(), fd);
+	std::vector<int>::iterator it = std::find(_opList.begin(), _opList.begin(), fd);
 	if (it == _opList.end())
 		return false;
 	return true;
 }
 
 bool Channel::isInClinet(int fd) {
-	std::map<int, Client *>::iterator it = find(_clients.begin(), _clients.begin(), fd);
+	std::map<int, Client *>::iterator it = _clients.find(fd);
 	if (it == _clients.end())
 		return false;
 	return true;

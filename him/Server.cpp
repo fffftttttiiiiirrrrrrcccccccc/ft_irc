@@ -220,7 +220,7 @@ void	Server::commandJoin(std::string argument, int fd) {
 		;
 	std::vector<std::string> vecChannel = splitComma(channel);
 	std::vector<std::string> vecPassword = splitComma(password);
-	for (int i = 0 ; i < vecChannel.size(); i++) {
+	for (unsigned long i = 0 ; i < vecChannel.size(); i++) {
 		std::map<std::string, Channel>::iterator chIt = _channels.find(vecChannel[i]);
 		if (chIt == _channels.end()) { //채널이 없으므로 만들고 넣어줌
 			Channel newChannel(channel);
@@ -296,9 +296,8 @@ void Server::commandPrivmsg(std::string argument, int fd) {
 		std::map<std::string, Channel>::iterator tmpChannel = _channels.find(target);
 		if (tmpChannel == _channels.end())
 			return ;
-		
-		for (std::map<int, Client *>::iterator it = tmpChannel->second.getClients().begin();
-			it != tmpChannel->second.getClients().end(); it++){
+		std::map<int, Client *> tmpChannelList = tmpChannel->second.getClients();
+		for (std::map<int, Client *>::iterator it = tmpChannelList.begin(); it != tmpChannel->second.getClients().end(); it++){
 				std::string tmpMsg = ":" + _clients[fd].getNickName() + " PRIVMSG " + target + " :" + msg + "\r\n";
 				send(it->second->getFd(), &tmpMsg, tmpMsg.length(), 0);
 			}
@@ -332,8 +331,9 @@ void Server::commandNotice(std::string argument, int fd){
 		if (tmpChannel == _channels.end())
 			return ;
 		
-		for (std::map<int, Client *>::iterator it = tmpChannel->second.getClients().begin();
-			it != tmpChannel->second.getClients().end(); it++){
+		Channel *tmpCh = &tmpChannel->second;
+		std::map<int, Client *> tmp = tmpCh->getClients();
+		for (std::map<int, Client *>::iterator it = tmp.begin(); it != tmp.end(); it++) {
 				std::string tmpMsg = ":" + _clients[fd].getNickName() + " NOTICE " + target + " :" + msg + "\r\n";
 				send(it->second->getFd(), &tmpMsg, tmpMsg.length(), 0);
 			}
@@ -363,7 +363,7 @@ void Server::commandKick(std::string argument, int fd){
 
 	std::vector<std::string> vecChannel = splitComma(channel);
 	std::vector<std::string> vecClient = splitComma(client);
-	for (int i = 0; i < vecChannel.size(); i++) {
+	for (unsigned long i = 0; i < vecChannel.size(); i++) {
 		std::map<std::string, Channel>::iterator chIt = _channels.find(vecChannel[i]);
 		if (chIt == _channels.end()) //ERR_NOSUCHCHANNEL (403) 채널이없음
 			return ;

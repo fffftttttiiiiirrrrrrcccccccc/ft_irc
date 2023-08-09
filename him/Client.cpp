@@ -39,6 +39,10 @@ void Client::setFd(int fd){
 	_fd = fd;
 }
 
+int Client::getFd(){
+	return _fd;
+}
+
 std::map<std::string, Channel *> Client::getChannels() {
 	return _clientChannels;
 }

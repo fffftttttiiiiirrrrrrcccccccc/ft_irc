@@ -9,7 +9,7 @@ class Client;
 
 class Channel {
 	private:
-		Channel();
+
 		std::map<int , Client *> _clients; //<fd, cli 참조>
 		std::string _channelName;
 
@@ -28,7 +28,7 @@ class Channel {
 		unsigned long		_LimitClientNum; // 제한된 인원수만 입장 가능 /mode #채널명 +l number
 
 	public:
-		
+		Channel();
 		Channel(std::string channelName);
 		std::map<int, Client *> getClients();
 		std::string getChannelName();
