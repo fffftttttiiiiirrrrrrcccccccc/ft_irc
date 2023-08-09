@@ -9,7 +9,10 @@ class Client;
 
 class Channel {
 	private:
+		Channel();
 		std::map<int , Client *> _clients; //<fd, cli 참조>
+		std::string _channelName;
+
 		bool	_isInviteOnly; // 초대한 사람만 들어갈 수 있음. /mode #채널명 +i
 
 		bool		_isTopic; // op만 topic설정 가능 /mode #채널명 +t
@@ -25,8 +28,10 @@ class Channel {
 		unsigned long		_LimitClientNum; // 제한된 인원수만 입장 가능 /mode #채널명 +l number
 
 	public:
-		Channel();
+		
+		Channel(std::string channelName);
 		std::map<int, Client *> getClients();
+		std::string getChannelName();
 		void	addClinetInChannel(int fd, Client* client, std::string password);
 		void 	removeClinetInChannel(int fd);
 
@@ -42,8 +47,16 @@ class Channel {
 		void	setTopic(std::string topic);
 		void	setLimitClientNum(int num);
 
+		bool	getIsLimitMode();
+		bool	getIsOperatorMode();
+		bool	getIsInviteMode();
+
+		bool	isJoinalbe();
+
 		bool	isOpClient(int fd);
 		bool	isInClinet(int fd);
+
+		void	inviteClient(int fd, Client *client);
 
 		void	partClinet(int fd, std::string msg); // 채널 메세지 보내기 추가해야함.
 

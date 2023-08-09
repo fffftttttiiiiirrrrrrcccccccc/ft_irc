@@ -219,7 +219,7 @@ void	Server::commandJoin(std::string argument, int fd) {
 		ss >> channel >> password;
 		std::map<std::string, Channel>::iterator channelIt = _channels.find(channel);
 		if (channelIt == _channels.end()) {
-			Channel newChannel;
+			Channel newChannel(channel);
 			_channels[channel] = newChannel;
 			_channels[channel].addClinetInChannel(fd, &_clients[fd], password);
 			std::cout << "127" << std::endl;
@@ -365,6 +365,43 @@ void Server::commandKick(std::string argument, int fd){
 		commandPart(cmd, fd);
 		// send vecClient[i] 에 msg 보내기 추가
 	}
+}
+
+void Server::commandInvite(std::string argument, int fd) {
+	std::istringstream	str(argument);
+	
+	std::string			nickName;
+	std::string			channel;
+
+	str >> nickName >> channel;
+
+	if (nickName == "" || channel == "") // ERR_NEEDMOREPARAMS (461): 인자부족
+		return ;
+	Client *tmpClient = findClient(nickName);
+	if (tmpClient == NULL) //ERR_NOSUCHNICK (401): 초대할 클라이언트 없음
+		return ;
+	std::map<std::string, Channel>::iterator chIt = _channels.find(channel);
+	if (chIt == _channels.end()) //ERR_NOSUCHCHANNEL (403) 채널이없음
+		return ;
+	if (!chIt->second.isInClinet(fd)) //ERR_NOTONCHANNEL (442): 사용자가 채널에 없음
+		return ;
+	if (chIt->second.isInClinet(tmpClient->getFd())) // ERR_USERONCHANNEL (443): 초대할 클라이언트가 이미 채널에 있음
+		return ;
+	if (chIt->second.getIsInviteMode()){ //초대모드면 관리자 권한 필요
+		if (!chIt->second.isOpClient(fd)) //ERR_CHANOPRIVSNEEDED (482) 사용자가 op가 아님
+			return ;
+		if (!chIt->second.isJoinalbe()) //인원수가 가득 참.
+			return ;
+	}
+	else{
+		if (!chIt->second.isJoinalbe()) //인원수가 가득 참.
+			return ;
+		
+	}
+	//초대메세지 보내기
+	chIt->second.inviteClient(tmpClient->getFd(), tmpClient);
+	tmpClient->addChannel(&chIt->second);
+
 	
 }
 

@@ -61,10 +61,11 @@ class Server{
 		void commandPrivmsg(std::string argument, int fd); // 이건 메세지 전달
 		void commandNotice(std::string argument, int fd); // 이건 공지로 메세지 전달 이건 에러처리가 없음.
 		void commandKick(std::string argument, int fd); // /kick #채널명 닉네임 메시지
+		void commandInvite(std::string argument, int fd); // 초대하기  /invite 닉네임 #채널명
 		//구현해야함
 
 		
-		void commandInvite(std::string argument, int fd); // 초대하기  /invite 닉네임 #채널명
+		
 		void commandTopic(std::string argument, int fd); // topic설정 채널 모드 확인  op인지 확인
 		void commandMode(std::string argument, int fd); // 채널 모드 설정 op권한 있어야 함.
 		void commandOp(std::string argument, int fd); //  op권한 주기 (여러명도 가능) 채널에 속해있는지 확인하고 주기

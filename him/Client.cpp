@@ -63,3 +63,7 @@ void Client::welcomeMsg(){
 		_isLogin = true;
 	}
 }
+
+void Client::addChannel(Channel *channel){
+	_clientChannels[channel->getChannelName()] = channel;
+}

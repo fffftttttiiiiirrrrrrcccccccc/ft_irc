@@ -1,6 +1,19 @@
 #include "Channel.hpp"
 
 Channel::Channel(){
+		_channelName = "";
+		_isInviteOnly = false;
+		_isTopic = false;
+		_topic = "";
+		_isKey = false;
+		_password = "";
+		_isOperator = false;
+		_isLimit = false;
+		_LimitClientNum = 50;
+}
+
+Channel::Channel(std::string channelName){
+		_channelName = channelName;
 		_isInviteOnly = false;
 		_isTopic = false;
 		_topic = "";
@@ -95,4 +108,28 @@ bool Channel::isInClinet(int fd) {
 	if (it == _clients.end())
 		return false;
 	return true;
+}
+
+bool	Channel::getIsLimitMode(){
+	return _isLimit;
+}
+bool	Channel::getIsOperatorMode(){
+	return _isOperator;
+}
+bool	Channel::getIsInviteMode(){
+	return _isInviteOnly;
+}
+
+bool	Channel::isJoinalbe() {
+	if (_isLimit && _clients.size() == _LimitClientNum)
+		return false;
+	return true;
+}
+
+void	Channel::inviteClient(int fd, Client *client) {
+	_clients[fd] = client;
+}
+
+std::string Channel::getChannelName(){
+	return _channelName;
 }

@@ -38,6 +38,7 @@ class Client{
 		std::string getTmpCmd();
 
 		void welcomeMsg();
+		void addChannel(Channel *channel);
 
 
 		//join
