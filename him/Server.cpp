@@ -262,7 +262,7 @@ void Server::send_message(Client &client, int rpl_num) {
 	//Message객체 생성 후, 메시지 연산 함수 리턴 받아서 그대로 보내기
 	Message tmp_msg(client, rpl_num);
 	const char * msg_return = tmp_msg.message_sender();
-	send(client.getFd(),  msg_return, strlen(msg_return), 0);
+	send(client.getFd(), msg_return, strlen(msg_return), 0);
 }
 //추가
 //pass랑 user는 두번 못부름
