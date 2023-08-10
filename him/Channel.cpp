@@ -137,7 +137,7 @@ bool	Channel::getIsKeyMode(){
 }
 
 bool	Channel::isJoinalbe() {
-	if (_isLimit && _clients.size() == _LimitClientNum)
+	if (_isLimit && _clients.size() >= _LimitClientNum)
 		return false;
 	return true;
 }

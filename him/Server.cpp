@@ -78,7 +78,7 @@ void	Server::runServer() {
 			send(fd.fd, motdEndMsg, strlen(motdEndMsg), 0);
 
 		}
-		for (unsigned long i = 1; i <= _fds.size(); i++) {
+		for (unsigned long i = 1; i < _fds.size(); i++) {
 			if (_fds[i].revents && POLLIN) {
 				char buffer[1025];
 				memset(buffer, 0, 1025);
@@ -155,13 +155,13 @@ void	Server::get_command(std::string buffer, int fd) {
 		else if(command == "user" || command == "USER")
 			commandUser(argument, fd);
 		else if(command == "part" || command == "PART")
-			commandUser(argument, fd);
+			commandPart(argument, fd);
 		else if(command == "privmsg" || command == "PRIVMSG")
-			commandUser(argument, fd);
+			commandPrivmsg(argument, fd);
 		else if(command == "notice" || command == "NOTICE")
-			commandUser(argument, fd);
+			commandNotice(argument, fd);
 		else if(command == "kick" || command == "KICK")
-			commandUser(argument, fd);
+			commandKick(argument, fd);
 		_command = "";
 	}
 	
@@ -219,23 +219,23 @@ void	Server::commandJoin(std::string argument, int fd) {
 	if (channel == "")
 		;
 	std::vector<std::string> vecChannel = splitComma(channel);
-	std::vector<std::string> vecPassword = splitComma(password);
 	for (unsigned long i = 0 ; i < vecChannel.size(); i++) {
 		std::map<std::string, Channel>::iterator chIt = _channels.find(vecChannel[i]);
 		if (chIt == _channels.end()) { //채널이 없으므로 만들고 넣어줌
 			Channel newChannel(channel);
 			_channels[channel] = newChannel;
-			_channels[channel].addClinetInChannel(fd, &_clients[fd], vecPassword[i]);
+			_channels[channel].addClinetInChannel(fd, &_clients[fd], "");
 			_clients[fd].addChannel(&_channels[channel]);
 		}
 		else{
+			std::vector<std::string> vecPassword = splitComma(password);
 			if (chIt->second.isInClinet(fd)) //ERR_NOTONCHANNEL (442): 사용자가 이미 채널에 있음
 				return ;
 			if (chIt->second.getIsInviteMode()) //ERR_INVITEONLYCHAN (473):초대만 가능모드
 				return ;
 			if (chIt->second.getIsLimitMode() && !chIt->second.isJoinalbe()) //ERR_CHANNELISFULL (471): 인원이 꽉참
 				return ;
-			if (chIt->second.getIsKeyMode() && chIt->second.getPassword() != vecPassword[i])  //ERR_BADCHANNELKEY (475):  비밀번호 틀림
+			if (chIt->second.getIsKeyMode() && vecPassword.size() < i && chIt->second.getPassword() != vecPassword[i])  //ERR_BADCHANNELKEY (475):  비밀번호 틀림
 				return ;
 			chIt->second.addClinetInChannel(fd, &_clients[fd], vecPassword[i]);
 			_clients[fd].addChannel(&chIt->second);
@@ -245,11 +245,15 @@ void	Server::commandJoin(std::string argument, int fd) {
 }
 
 void Server::commandNick(std::string argument, int fd) {
+
+	std::istringstream	str(argument);
+	std::string nickName;
+	std::getline(str, nickName, ' ');
 	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++) {
-		if (it->second.getNickName() == argument)
+		if (it->second.getNickName() == nickName)
 			exit(1);
 	}
-	_clients[fd].setNickName(argument);
+	_clients[fd].setNickName(nickName);
 }
 
 void Server::commandPass(std::string argument, int fd) {
@@ -420,11 +424,12 @@ void Server::commandInvite(std::string argument, int fd) {
 }
 
 void Server::commandTopic(std::string argument, int fd){
-		std::istringstream	str(argument);
+	std::istringstream	str(argument);
 
 	std::string			channel;
 	std::string			topic;
 
+	str >>channel >> topic;
 	if (channel == "") //ERR_NEEDMOREPARAMS (461): 매개변수 부족
 		return ;
 
@@ -450,13 +455,88 @@ void Server::commandTopic(std::string argument, int fd){
 	}
 }
 
+void Server::commandMode(std::string argument, int fd) {
+	std::istringstream	str(argument);
+
+	std::string			channel;
+	std::string			mode;
+	std::string			arg;
+
+	// 	 /mode #채널명 +i (초대한 사람만 들어올수 있게함)
+	//   /mode #채널명 +t (op만 TOPIC을 변경할 수 있게 함)
+	//   /mode #채널명 +k 비밀번호 (채널에 비밀번호를 설정)
+	//   /mode #채널명 +o 닉네임 (op권한을 줌)
+	//   /mode #채널명 +l number (number 만큼 입장가능 인원을 제한함)
+
+	str >>channel >> mode >> arg;
+
+	if (channel == "" || mode == "") //ERR_NEEDMOREPARAMS (461): 매개변수 부족
+		return ;
+	if (mode[0] != '+' && (mode[1] == 'k' || mode[1] == 'o' || mode[1] == 'l') && arg == "") //ERR_NEEDMOREPARAMS (461): 매개변수 부족
+		return ;
+	if (mode[0] != '-' && mode[1] == 'o' && arg == "") //ERR_NEEDMOREPARAMS (461): 매개변수 부족
+		return ;
+	std::map<std::string, Channel>::iterator chIt = _channels.find(channel);
+	if (chIt == _channels.end()) //ERR_NOSUCHCHANNEL (403) 채널이없음
+		return ;
+	if (!chIt->second.isInClinet(fd)) //ERR_NOTONCHANNEL (442): 사용자가 채널에 없음
+		return ;
+	if (!chIt->second.isOpClient(fd)) //ERR_CHANOPRIVSNEEDED (482) 사용자가 op가 아님
+		return ;
+
+	if (mode[0] == '+') {
+		if (mode[1] == 'i')
+			chIt->second.setIsInviteOnly(true);
+		else if (mode[1] == 't')
+			chIt->second.setIsTopic(true);
+		else if (mode[1] == 'k'){
+			chIt->second.setIsKey(true);
+			chIt->second.setPassword(arg);
+		}
+		else if (mode[1] == 'o'){
+			Client *tmpClient = findClient(arg);
+			if (tmpClient == NULL) //ERR_USERNOTINCHANNEL (441): 클라이언트가 없음.
+				return ;
+			if (!chIt->second.isInClinet(tmpClient->getFd())) //ERR_USERNOTINCHANNEL (441): 채널에 클라이언트가 없음.
+				return ;
+			chIt->second.addOpClinet(tmpClient->getFd());
+		}
+		else if (mode[1] == 'l') {
+			chIt->second.setIsLimit(true);
+			int num = stoi(arg);
+			chIt->second.setLimitClientNum(num);
+		}
+	}
+	else {
+		if (mode[1] == 'i')
+			chIt->second.setIsInviteOnly(false);
+		else if (mode[1] == 't')
+			chIt->second.setIsTopic(false);
+		else if (mode[1] == 'k'){
+			chIt->second.setIsKey(false);
+			chIt->second.setPassword("");
+		}
+		else if (mode[1] == 'o'){
+			Client *tmpClient = findClient(arg);
+			if (tmpClient == NULL) //ERR_USERNOTINCHANNEL (441): 클라이언트가 없음.
+				return ;
+			if (!chIt->second.isInClinet(tmpClient->getFd())) //ERR_USERNOTINCHANNEL (441): 채널에 클라이언트가 없음.
+				return ;
+			chIt->second.removeOpClient(tmpClient->getFd());
+		}
+		else if (mode[1] == 'l')
+			chIt->second.setIsLimit(false);
+	}
+}
+
 std::vector<std::string> Server::splitComma(std::string argument){
 	std::istringstream	str(argument);
+	std::string tmp;
 	std::vector<std::string> ret;
 
-	int i = 0;
-	while (std::getline(str, ret[i], ','))
-		i++;
+	while (std::getline(str, tmp, ','))
+		ret.push_back(tmp);
+		
 	return (ret);
 }
 
