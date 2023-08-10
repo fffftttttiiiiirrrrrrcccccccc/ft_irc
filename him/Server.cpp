@@ -21,6 +21,8 @@ int Server::getSocket() {
 }
 
 void Server::sendMsg(std::string msg, int fd){
+	msg += "\0";
+	std::cout << msg << " " << msg.length() << std::endl;
 	send(fd, &msg, msg.length(), 0);
 }
 
@@ -99,7 +101,9 @@ void	Server::runServer() {
 			_fds.push_back(fd);
 			Client tmpClient;
 			tmpClient.initClient(clientSocketfd);
+			
 			_clients[clientSocketfd] = tmpClient;
+			std::cout << clientSocketfd << " " << _clients[clientSocketfd].getFd() << std::endl;
 			
 		}
 		for (unsigned long i = 1; i < _fds.size(); i++) {
@@ -172,46 +176,49 @@ void	Server::get_command(std::string buffer, int fd) {
 			if (command == "pass" || command == "PASS")
 				commandPass(argument, fd);
 			else
-				sendMsg(RPL_464(_clients[fd].getNickName()),fd);
-		}
-		else if(_clients[fd].getUserName() == "*") {
+				sendMsg(RPL_464(_clients[fd].getNickName()), fd);
+		}else if (_clients[fd].getNickName() == "*"){
+			if (command == "pass" || command == "PASS")
+				commandPass(argument, fd);
+			else if (command == "nick" || command == "NICK")
+				commandNick(argument, fd);
+		} else if(_clients[fd].getUserName() == "*") {
 			if (command == "pass" || command == "PASS")
 				commandPass(argument, fd);
 			else if (command == "user" || command == "USER")
 				commandUser(argument, fd);
-		}
-		else {
-		if(command == "quit" || command == "QUIT")
-			commandQuit(argument, fd);
-		else if(command == "join" || command == "JOIN")
-			commandJoin(argument, fd);
-		else if(command == "nick" || command == "NICK")
-			commandNick(argument, fd);
-		else if(command == "pass" || command == "PASS")
-			commandPass(argument, fd);
-		else if(command == "user" || command == "USER")
-			commandUser(argument, fd);
-		else if(command == "part" || command == "PART")
-			commandPart(argument, fd);
-		else if(command == "privmsg" || command == "PRIVMSG")
-			commandPrivmsg(argument, fd);
-		else if(command == "notice" || command == "NOTICE")
-			commandNotice(argument, fd);
-		else if(command == "kick" || command == "KICK")
-			commandKick(argument, fd);
-		else if(command == "invite" || command == "INVITE")
-			commandInvite(argument, fd);
-		else if(command == "topic" || command == "TOPIC")
-			commandTopic(argument, fd);
-		else if(command == "mode" || command == "MODE")
-			commandMode(argument, fd);
-		else if(command == "ping" || command == "PING")
-			commandPing(argument, fd);
-		_command = "";
+			else if (command == "nick" || command == "NICK")
+				commandNick(argument, fd);
+		} else {
+			if(command == "quit" || command == "QUIT")
+				commandQuit(argument, fd);
+			else if(command == "join" || command == "JOIN")
+				commandJoin(argument, fd);
+			else if(command == "nick" || command == "NICK")
+				commandNick(argument, fd);
+			else if(command == "pass" || command == "PASS")
+				commandPass(argument, fd);
+			else if(command == "user" || command == "USER")
+				commandUser(argument, fd);
+			else if(command == "part" || command == "PART")
+				commandPart(argument, fd);
+			else if(command == "privmsg" || command == "PRIVMSG")
+				commandPrivmsg(argument, fd);
+			else if(command == "notice" || command == "NOTICE")
+				commandNotice(argument, fd);
+			else if(command == "kick" || command == "KICK")
+				commandKick(argument, fd);
+			else if(command == "invite" || command == "INVITE")
+				commandInvite(argument, fd);
+			else if(command == "topic" || command == "TOPIC")
+				commandTopic(argument, fd);
+			else if(command == "mode" || command == "MODE")
+				commandMode(argument, fd);
+			else if(command == "ping" || command == "PING")
+				commandPing(argument, fd);
+			_command = "";
 		}
 	}
-	
-	
 }
 
 void Server::exitClient(int fd) {
@@ -315,6 +322,8 @@ void Server::commandNick(std::string argument, int fd) {
 
 void Server::commandPass(std::string argument, int fd) {
 	_clients[fd].setPassword(argument);
+	std::cout << "server password : " << _password << "1" << std::endl;
+	std::cout << "client password : " << argument << "1" <<std::endl;
 }
 
 void Server::commandUser(std::string argument, int fd) {
