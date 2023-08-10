@@ -12,6 +12,23 @@ int Server::getSocket() {
 	return _serverSocket;
 }
 
+void Server::printClientList(){
+	std::cout << " ClientList : " ;
+	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++){
+		Client &tmp = it->second;
+		std::cout << tmp.getNickName() << " ";
+	}
+	std::cout << std::endl;
+		
+}
+void Server::printChannelList(){
+	std::cout << " ChannelList : " ;
+	for (std::map<std::string, Channel>::iterator it = _channels.begin(); it != _channels.end(); it++){
+		Channel &tmp = it->second;
+		std::cout << tmp.getChannelName() << " ";
+	}
+	std::cout << std::endl;
+}
 
 void Server::sockCreat() {
 
@@ -52,7 +69,6 @@ std::vector<struct pollfd> Server::getPollfd() {
 void	Server::runServer() {
 	int ret = 0;
 	while (1) {
-		// std::cout << "123" << std::endl;
 		ret = poll(&_fds.front(), _fds.size(), -1);
 		if (ret < 0) {
 			std::cout << "Poll error" << std::endl;
@@ -101,10 +117,11 @@ void	Server::runServer() {
 					// exit(1);
 				}
 				else {
-						std::cout << buffer <<std::endl;
 						buffer[ret] = '\0';
 						get_command(buffer, _fds[i].fd);
 						write(_fds[i].fd, buffer, ret);
+						printClientList();
+						printChannelList();
 						// std::cout << "Get socket data : " << buffer << std::endl;
 				}
 			}
@@ -116,7 +133,6 @@ void	Server::get_command(std::string buffer, int fd) {
 
 	if (fd)
 		;
-	std::cout << buffer.length() << std::endl;
 	if (buffer.length() >= 2) {
 		if (buffer[buffer.length() - 2] != '\r' && buffer[buffer.length() - 1] != '\n') {
 			std::cout << buffer << std::endl;
@@ -539,6 +555,8 @@ void Server::commandMode(std::string argument, int fd) {
 
 void Server::commandPing(std::string argument, int fd){
 	//Pong메세지 보내기
+	if (argument == "" || fd)
+		;
 }
 
 std::vector<std::string> Server::splitComma(std::string argument){

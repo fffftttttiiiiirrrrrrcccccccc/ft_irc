@@ -45,9 +45,7 @@ void Channel::addClinetInChannel(int fd, Client* client, std::string password) {
 			return ;
 		if (_isLimit && _clients.size() == _LimitClientNum)
 			return ;
-		std::cout << "!23" << std::endl;
 		_clients[fd] = client;
-		std::cout << "ccc" << std::endl;
 		if (_clients.size() == 1)
 			_opList.push_back(fd);
 	}

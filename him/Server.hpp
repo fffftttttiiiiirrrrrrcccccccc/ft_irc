@@ -71,6 +71,8 @@ class Server{
 		void commandWho(std::string argument, int fd);
 		
 
+		void printClientList();
+		void printChannelList();
 		// int insulta
 		// int secret
 		// int channel
