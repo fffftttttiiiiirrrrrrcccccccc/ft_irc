@@ -2,6 +2,7 @@
 #define CHANNEL_HPP
 
 #include <iostream>
+#include <algorithm>
 #include <map>
 #include "Client.hpp"
 

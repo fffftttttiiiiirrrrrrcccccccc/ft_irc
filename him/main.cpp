@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <iostream>
 #include <cstring>
 #include <unistd.h>
@@ -31,13 +32,14 @@ int main(int ac, char** av){
 		std::cout << "Error : Too low arguments" << std::endl;
 		return (1);
 	}
-	int tmp_port_num = std::stoi(av[1]);
+	int tmp_port_num = atoi(av[1]);
 	if (tmp_port_num < 1024 || tmp_port_num > 65535){
 		std::cout << "Numeric port number " << std::endl;
 		return (1);
 	}
 	server.serverInit(tmp_port_num, av[2]);
 	server.sockCreat();
+	std::cout << "port : " << tmp_port_num << "\n" << "password : " << av[2] <<std::endl;
 	if (listen(server.getSocket(), 50) == -1) {
 		std::cout << "Socket listen failed" << std::endl;
 		return (1);

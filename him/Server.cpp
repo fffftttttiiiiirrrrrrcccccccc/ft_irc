@@ -166,6 +166,8 @@ void	Server::get_command(std::string buffer, int fd) {
 	std::string			command;
 	std::string			argument;
 	while (std::getline(str, command, ' ')){
+		if (command == "LS")
+			continue;
 		_command = command;
 		if (command == "CAP")
 			continue;
@@ -270,7 +272,7 @@ void	Server::commandJoin(std::string argument, int fd) {
 
 	str >> channel >> password;//ERR_NEEDMOREPARAMS (461): 인자가 부족
 	if (channel == "")
-		;
+		return ;
 	std::vector<std::string> vecChannel = splitComma(channel);
 	for (unsigned long i = 0 ; i < vecChannel.size(); i++) {
 		std::map<std::string, Channel>::iterator chIt = _channels.find(vecChannel[i]);
@@ -592,7 +594,7 @@ void Server::commandMode(std::string argument, int fd) {
 		}
 		else if (mode[1] == 'l') {
 			chIt->second.setIsLimit(true);
-			int num = stoi(arg);
+			int num = atoi(arg.c_str());
 			chIt->second.setLimitClientNum(num);
 		}
 	}
@@ -621,7 +623,7 @@ void Server::commandMode(std::string argument, int fd) {
 void Server::commandPing(std::string argument, int fd){
 	//Pong메세지 보내기
 	if (argument == "" || fd)
-		;
+		return ;
 }
 
 std::vector<std::string> Server::splitComma(std::string argument){

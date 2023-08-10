@@ -98,7 +98,7 @@ void Channel::addOpClinet(int fd){
 void Channel::partClinet(int fd, std::string msg){
 	removeClinetInChannel(fd);
 	if (msg != "")
-		;// 채널에 메세지 남기기
+		return ;// 채널에 메세지 남기기
 
 }
 

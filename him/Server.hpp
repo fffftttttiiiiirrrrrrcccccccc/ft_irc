@@ -3,6 +3,7 @@
 
 #include "Client.hpp"
 #include "Channel.hpp"
+#include <cstdlib>
 #include <iostream>
 #include <map>
 #include <signal.h>
