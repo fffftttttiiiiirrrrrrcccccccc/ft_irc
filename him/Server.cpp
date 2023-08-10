@@ -162,6 +162,14 @@ void	Server::get_command(std::string buffer, int fd) {
 			commandNotice(argument, fd);
 		else if(command == "kick" || command == "KICK")
 			commandKick(argument, fd);
+		else if(command == "invite" || command == "INVITE")
+			commandInvite(argument, fd);
+		else if(command == "topic" || command == "TOPIC")
+			commandTopic(argument, fd);
+		else if(command == "mode" || command == "MODE")
+			commandMode(argument, fd);
+		else if(command == "ping" || command == "PING")
+			commandPing(argument, fd);
 		_command = "";
 	}
 	
@@ -527,6 +535,10 @@ void Server::commandMode(std::string argument, int fd) {
 		else if (mode[1] == 'l')
 			chIt->second.setIsLimit(false);
 	}
+}
+
+void Server::commandPing(std::string argument, int fd){
+	//Pong메세지 보내기
 }
 
 std::vector<std::string> Server::splitComma(std::string argument){
