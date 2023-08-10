@@ -7,6 +7,14 @@ Server::Server(int port, char *pass) {
 	_port = port;
 	_password = pass;
 }
+void Server::serverInit(int port, char* pass){
+	_port = port;
+	_password = pass;
+}
+std::map<int, Client> Server::getClients() {
+	return _clients;
+}
+
 
 int Server::getSocket() {
 	return _serverSocket;
@@ -275,7 +283,7 @@ void Server::commandNick(std::string argument, int fd) {
 	std::getline(str, nickName, ' ');
 	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++) {
 		if (it->second.getNickName() == nickName)
-			exit(1);
+			return ;
 	}
 	_clients[fd].setNickName(nickName);
 }

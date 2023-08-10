@@ -11,11 +11,22 @@
 #include "Channel.hpp"
 #include "Server.hpp"
 
+Server server;
 
-
+void signal_handler(int signo)
+{
+	if (signo == SIGINT)
+	{
+		std::map<int, Client> client = server.getClients();
+		for (std::map<int, Client>::iterator it = client.begin(); it != client.end(); it++)
+			close(it->first);
+		close(server.getSocket());
+		exit(0);
+	}
+}
 
 int main(int ac, char** av){
-
+	signal(SIGINT, signal_handler);
 	if (ac != 3) {
 		std::cout << "Error : Too low arguments" << std::endl;
 		return (1);
@@ -25,7 +36,7 @@ int main(int ac, char** av){
 		std::cout << "Numeric port number " << std::endl;
 		return (1);
 	}
-	Server server(tmp_port_num, av[2]);
+	server.serverInit(tmp_port_num, av[2]);
 	server.sockCreat();
 	if (listen(server.getSocket(), 50) == -1) {
 		std::cout << "Socket listen failed" << std::endl;

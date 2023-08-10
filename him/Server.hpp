@@ -5,6 +5,7 @@
 #include "Channel.hpp"
 #include <iostream>
 #include <map>
+#include <signal.h>
 #include <string.h>
 #include <cstring>
 #include <unistd.h>
@@ -34,7 +35,10 @@ class Server{
 		virtual ~Server();
 		Server(int port, char* pass);
 		Server(const Server &src);
+		std::map<int, Client> getClients();
+		void serverInit(int port, char* pass);
 		Server &operator=(const Server &rhs);
+		void signal_handler(int signo);
 
 		void	sockCreat();
 		int		getSocket();
