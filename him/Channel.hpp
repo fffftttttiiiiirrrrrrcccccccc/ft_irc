@@ -2,6 +2,7 @@
 #define CHANNEL_HPP
 
 #include <iostream>
+#include <algorithm>
 #include <map>
 #include "Client.hpp"
 
@@ -9,7 +10,10 @@ class Client;
 
 class Channel {
 	private:
+
 		std::map<int , Client *> _clients; //<fd, cli 참조>
+		std::string _channelName;
+
 		bool	_isInviteOnly; // 초대한 사람만 들어갈 수 있음. /mode #채널명 +i
 
 		bool		_isTopic; // op만 topic설정 가능 /mode #채널명 +t
@@ -26,7 +30,11 @@ class Channel {
 
 	public:
 		Channel();
+		Channel(std::string channelName);
 		std::map<int, Client *> getClients();
+		std::string getChannelName();
+		std::string getTopic();
+		std::string getPassword();
 		void	addClinetInChannel(int fd, Client* client, std::string password);
 		void 	removeClinetInChannel(int fd);
 
@@ -41,6 +49,19 @@ class Channel {
 		void	setPassword(std::string password);
 		void	setTopic(std::string topic);
 		void	setLimitClientNum(int num);
+
+		bool	getIsLimitMode();
+		bool	getIsOperatorMode();
+		bool	getIsInviteMode();
+		bool	getIsTopicMode();
+		bool	getIsKeyMode();
+
+		bool	isJoinalbe();
+
+		bool	isOpClient(int fd);
+		bool	isInClinet(int fd);
+
+		void	inviteClient(int fd, Client *client);
 
 		void	partClinet(int fd, std::string msg); // 채널 메세지 보내기 추가해야함.
 
