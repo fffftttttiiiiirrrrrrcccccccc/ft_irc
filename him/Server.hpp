@@ -15,6 +15,7 @@
 #include <poll.h>
 #include <vector>
 #include <sstream>
+#include "RPL.hpp"
 
 
 class Client;
@@ -39,6 +40,7 @@ class Server{
 		void serverInit(int port, char* pass);
 		Server &operator=(const Server &rhs);
 		void signal_handler(int signo);
+		void sendMsg(std::string msg, int fd);
 
 		void	sockCreat();
 		int		getSocket();

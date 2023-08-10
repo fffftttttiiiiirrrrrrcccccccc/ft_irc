@@ -9,9 +9,31 @@ void Client::initClient(int fd) {
 	_fd = fd;
 	_nickName = "*";
 	_userName = "*";
+	_hostName = "*";
+	_serverName = "*";
+	_realName = "*";
 	_password = "";
 	_tmpCmd = "";
 	_isLogin = false;
+}
+
+void Client::seHosttName(std::string str){
+	_hostName = str;
+}
+void Client::setServerName(std::string str){
+	_serverName = str;
+}
+void Client::setRealName(std::string str){
+	_realName = str;
+}
+std::string Client::geHosttName(){
+	return _hostName;
+}
+std::string Client::getServerName(){
+	return _serverName;
+}
+std::string Client::getRealName(){
+	return _realName;
 }
 
 void Client::setTmpCmd(std::string str) {

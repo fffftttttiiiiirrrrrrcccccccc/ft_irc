@@ -20,6 +20,10 @@ int Server::getSocket() {
 	return _serverSocket;
 }
 
+void Server::sendMsg(std::string msg, int fd){
+	send(fd, &msg, msg.length(), 0);
+}
+
 void Server::printClientList(){
 	std::cout << " ClientList : " ;
 	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++){
@@ -94,13 +98,6 @@ void	Server::runServer() {
 			fd.revents = 0;
 			_fds.push_back(fd);
 			_clients[clientSocketfd].initClient(clientSocketfd);
-			const char* motdStartMsg = "375 <redic> :- Welcome to our IRC server.\r\n";
-			send(fd.fd, motdStartMsg, strlen(motdStartMsg), 0);
-			const char* motdMsg1 = "372 <redic> :- This is the Message of the Day.\r\n";
-			send(fd.fd, motdMsg1, strlen(motdMsg1), 0);
-			const char* motdEndMsg = "376 <redic> :End of MOTD command.\r\n";
-			send(fd.fd, motdEndMsg, strlen(motdEndMsg), 0);
-
 		}
 		for (unsigned long i = 1; i < _fds.size(); i++) {
 			if (_fds[i].revents && POLLIN) {
@@ -116,10 +113,10 @@ void	Server::runServer() {
 				}
 				else if (ret == 0){
 					std::map<int, Client>::iterator it = _clients.find(_fds[i].fd);
+					std::cout << "Disconnet client" << _clients[_fds[i].fd].getNickName() << std::endl;
 					_clients.erase(it);
 					close(_fds[i].fd);
 					_fds.erase(_fds.begin() + i);
-					std::cout << "Disconnet client" << _clients[_fds[i].fd].getNickName() << std::endl;
 					continue;
 					// client 삭제하는 함수 구현. exit 찍으면 안됨.
 					// exit(1);
@@ -127,7 +124,7 @@ void	Server::runServer() {
 				else {
 						buffer[ret] = '\0';
 						get_command(buffer, _fds[i].fd);
-						write(_fds[i].fd, buffer, ret);
+						// write(_fds[i].fd, buffer, ret);
 						printClientList();
 						printChannelList();
 						// std::cout << "Get socket data : " << buffer << std::endl;
@@ -168,6 +165,19 @@ void	Server::get_command(std::string buffer, int fd) {
 		std::getline(str, argument);
 		std::cout << "Command : " << command << std::endl;
 		std::cout << "Argument : " << argument << std::endl;
+		if (_password != _clients[fd].getPassword()){
+			if (command == "pass" || command == "PASS")
+				commandPass(argument, fd);
+			else
+				sendMsg(RPL_464(_clients[fd].getNickName()),fd);
+		}
+		else if(_clients[fd].getUserName() == "*") {
+			if (command == "pass" || command == "PASS")
+				commandPass(argument, fd);
+			else if (command == "user" || command == "USER")
+				commandUser(argument, fd);
+		}
+		else {
 		if(command == "quit" || command == "QUIT")
 			commandQuit(argument, fd);
 		else if(command == "join" || command == "JOIN")
@@ -195,6 +205,7 @@ void	Server::get_command(std::string buffer, int fd) {
 		else if(command == "ping" || command == "PING")
 			commandPing(argument, fd);
 		_command = "";
+		}
 	}
 	
 	
@@ -271,6 +282,7 @@ void	Server::commandJoin(std::string argument, int fd) {
 				return ;
 			chIt->second.addClinetInChannel(fd, &_clients[fd], vecPassword[i]);
 			_clients[fd].addChannel(&chIt->second);
+			sendMsg(RPL_332(_clients[fd].getNickName(), chIt->second.getChannelName(), chIt->second.getTopic()), fd);
 			//RPL_TOPIC (332): 채널의 토픽을 클라이언트에게 전달합니다. 채널의 토픽 정보를 알려주는 역할을 합니다.
 		}
 	}
@@ -281,9 +293,19 @@ void Server::commandNick(std::string argument, int fd) {
 	std::istringstream	str(argument);
 	std::string nickName;
 	std::getline(str, nickName, ' ');
+	if (nickName == ""){
+		sendMsg(RPL_431(_clients[fd].getNickName()),fd);
+		return ;
+	}
+	if (nickName.length() > 9) {
+		sendMsg(RPL_432(_clients[fd].getNickName(), nickName),fd);
+		return ;
+	}
 	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++) {
-		if (it->second.getNickName() == nickName)
+		if (it->second.getNickName() == nickName){
+			sendMsg(RPL_433(_clients[fd].getNickName(), nickName), fd);
 			return ;
+		}
 	}
 	_clients[fd].setNickName(nickName);
 }
@@ -293,10 +315,21 @@ void Server::commandPass(std::string argument, int fd) {
 }
 
 void Server::commandUser(std::string argument, int fd) {
-	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++) {
-		if (it->second.getUserName() == argument)
-			return ;
+	std::istringstream	str(argument);
+	std::string userName;
+	std::string hostName;
+	std::string serverName;
+	std::string realName;
+	str >> userName >> hostName >> serverName >> realName;
+	if (userName == "" || hostName == "" || serverName == "" || realName == ""){
+		sendMsg(RPL_461(_clients[fd].getNickName(), "USER"),fd);
+		return ;
 	}
+	if (_clients[fd].getUserName() != "*"){
+		sendMsg(RPL_462(_clients[fd].getNickName()),fd);
+		return ;
+	}
+
 	_clients[fd].setUserName(argument);
 }
 

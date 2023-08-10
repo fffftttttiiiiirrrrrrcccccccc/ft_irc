@@ -13,6 +13,9 @@ class Client{
 		std::map<std::string, Channel *> _clientChannels;
 		std::string _nickName;
 		std::string _userName;
+		std::string _hostName;
+		std::string	_serverName;
+		std::string _realName;
 		std::string _password;
 		int				_fd;
 		std::string _tmpCmd;
@@ -28,12 +31,18 @@ class Client{
 		void setNickName(std::string str);
 		void setUserName(std::string str);
 		void setPassword(std::string str);
+		void seHosttName(std::string str);
+		void setServerName(std::string str);
+		void setRealName(std::string str);
 		void setTmpCmd(std::string str);
 		void addTmpCmd(std::string str);
 		int getFd();
 		std::map<std::string, Channel *> getChannels();
 		std::string getNickName();
 		std::string getUserName();
+		std::string geHosttName();
+		std::string getServerName();
+		std::string getRealName();
 		std::string getPassword();
 		std::string getTmpCmd();
 
