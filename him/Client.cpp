@@ -84,8 +84,8 @@ std::string Client::getPassword(){
 
 void Client::welcomeMsg(){
 	if (_nickName != "*" && _password != "" && _userName != "*" && !_isLogin){
-		const char* motdEndMsg = "001 <redic> :Welcome to the Internet Relay Network\r\n";
-		send(_fd, motdEndMsg, strlen(motdEndMsg), 0);
+		// const char* motdEndMsg = "001 <redic> :Welcome to the Internet Relay Network\r\n";
+		// send(_fd, motdEndMsg, strlen(motdEndMsg), 0);
 		_isLogin = true;
 	}
 }
