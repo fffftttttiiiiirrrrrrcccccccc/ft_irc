@@ -97,7 +97,10 @@ void	Server::runServer() {
 			fd.fd = clientSocketfd;
 			fd.revents = 0;
 			_fds.push_back(fd);
-			_clients[clientSocketfd].initClient(clientSocketfd);
+			Client tmpClient;
+			tmpClient.initClient(clientSocketfd);
+			_clients[clientSocketfd] = tmpClient;
+			
 		}
 		for (unsigned long i = 1; i < _fds.size(); i++) {
 			if (_fds[i].revents && POLLIN) {
@@ -329,8 +332,8 @@ void Server::commandUser(std::string argument, int fd) {
 		sendMsg(RPL_462(_clients[fd].getNickName()),fd);
 		return ;
 	}
-
 	_clients[fd].setUserName(argument);
+	// sendMsg(RPL_001())
 }
 
 
