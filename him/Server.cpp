@@ -21,9 +21,7 @@ int Server::getSocket() {
 }
 
 void Server::sendMsg(std::string msg, int fd){
-	msg += "\0";
-	std::cout << msg << " " << msg.length() << std::endl;
-	send(fd, &msg, msg.length(), 0);
+	send(fd, msg.c_str(), msg.size(), 0);
 }
 
 void Server::printClientList(){
@@ -100,37 +98,41 @@ void	Server::runServer() {
 			fd.revents = 0;
 			_fds.push_back(fd);
 			Client tmpClient;
-			tmpClient.initClient(clientSocketfd);
-			
 			_clients[clientSocketfd] = tmpClient;
-			std::cout << clientSocketfd << " " << _clients[clientSocketfd].getFd() << std::endl;
+			_clients[clientSocketfd].initClient(clientSocketfd);
 			
 		}
-		for (unsigned long i = 1; i < _fds.size(); i++) {
-			if (_fds[i].revents && POLLIN) {
+		std::vector<pollfd>::iterator pollIt = _fds.begin();
+		
+		// for (; pollIt != _fds.end(); pollIt++) {
+			for (unsigned long i = 1; i < _fds.size(); i++) {
+				pollIt++;
+				std::cout << "test : " << pollIt->fd << std::endl;
+			if (pollIt->revents && POLLIN) {
 				char buffer[1025];
 				memset(buffer, 0, 1025);
-				ret = recv(_fds[i].fd, buffer, 1024, 0);
+				ret = recv(pollIt->fd, buffer, 1024, 0);
 				if (ret == -1 && errno != EAGAIN && errno != EWOULDBLOCK){
-					close(_fds[i].fd);
+					close(pollIt->fd);
 					close(_serverSocket);
-					_clients.erase(_fds[i].fd);
+					_clients.erase(pollIt->fd);
 					std::cout << "recv function failed" << std::endl;
 					exit(1);
 				}
 				else if (ret == 0){
-					std::map<int, Client>::iterator it = _clients.find(_fds[i].fd);
-					std::cout << "Disconnet client" << _clients[_fds[i].fd].getNickName() << std::endl;
-					_clients.erase(it);
-					close(_fds[i].fd);
-					_fds.erase(_fds.begin() + i);
+					exitClient(pollIt->fd);
+					// std::map<int, Client>::iterator it = _clients.find(pollIt->fd);
+					// std::cout << "Disconnet client" << _clients[pollIt->fd].getNickName() << std::endl;
+					// _clients.erase(it);
+					// close(pollIt->fd);
+					// _fds.erase(pollIt);
 					continue;
 					// client 삭제하는 함수 구현. exit 찍으면 안됨.
 					// exit(1);
 				}
 				else {
 						buffer[ret] = '\0';
-						get_command(buffer, _fds[i].fd);
+						get_command(buffer, pollIt->fd);
 						// write(_fds[i].fd, buffer, ret);
 						printClientList();
 						printChannelList();
@@ -143,8 +145,6 @@ void	Server::runServer() {
 
 void	Server::get_command(std::string buffer, int fd) {
 
-	if (fd)
-		;
 	if (buffer.length() >= 2) {
 		if (buffer[buffer.length() - 2] != '\r' && buffer[buffer.length() - 1] != '\n') {
 			std::cout << buffer << std::endl;
@@ -292,6 +292,9 @@ void	Server::commandJoin(std::string argument, int fd) {
 				return ;
 			chIt->second.addClinetInChannel(fd, &_clients[fd], vecPassword[i]);
 			_clients[fd].addChannel(&chIt->second);
+			// :aa!aa@localhost JOIN :#zxc
+			std::string joinMsg = ":" +_clients[fd].getNickName() + " JOIN " + chIt->second.getChannelName() + "\r\n";
+			sendMsg(joinMsg, fd);
 			sendMsg(RPL_332(_clients[fd].getNickName(), chIt->second.getChannelName(), chIt->second.getTopic()), fd);
 			//RPL_TOPIC (332): 채널의 토픽을 클라이언트에게 전달합니다. 채널의 토픽 정보를 알려주는 역할을 합니다.
 		}
@@ -321,9 +324,12 @@ void Server::commandNick(std::string argument, int fd) {
 }
 
 void Server::commandPass(std::string argument, int fd) {
-	_clients[fd].setPassword(argument);
+	std::istringstream	str(argument);
+	std::string password;
+	str >> password;
+	_clients[fd].setPassword(password);
 	std::cout << "server password : " << _password << "1" << std::endl;
-	std::cout << "client password : " << argument << "1" <<std::endl;
+	std::cout << "client password : " << _clients[fd].getPassword() << "1" <<std::endl;
 }
 
 void Server::commandUser(std::string argument, int fd) {
@@ -342,7 +348,13 @@ void Server::commandUser(std::string argument, int fd) {
 		return ;
 	}
 	_clients[fd].setUserName(argument);
-	// sendMsg(RPL_001())
+	sendMsg(RPL_001(_clients[fd].getNickName()),fd);
+	sendMsg(RPL_002(_clients[fd].getNickName()),fd);
+	sendMsg(RPL_003(_clients[fd].getNickName()),fd);
+	sendMsg(RPL_004(_clients[fd].getNickName()),fd);
+	sendMsg(RPL_375(_clients[fd].getNickName()),fd);
+	sendMsg(RPL_372(_clients[fd].getNickName()),fd);
+	sendMsg(RPL_376(_clients[fd].getNickName()),fd);
 }
 
 

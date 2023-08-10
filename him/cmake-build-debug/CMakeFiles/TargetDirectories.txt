@@ -1,0 +1,3 @@
+/Users/woohyeong/ft_irc/ft_irc/him/cmake-build-debug/CMakeFiles/main.cpp.dir
+/Users/woohyeong/ft_irc/ft_irc/him/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/woohyeong/ft_irc/ft_irc/him/cmake-build-debug/CMakeFiles/rebuild_cache.dir
