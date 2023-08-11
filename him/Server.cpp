@@ -166,8 +166,11 @@ void	Server::get_command(std::string buffer, int fd) {
 	std::string			command;
 	std::string			argument;
 	while (std::getline(str, command, ' ')){
-		if (command == "LS")
+		std::istringstream	cmdStream(command);
+		while (std::getline(cmdStream, command)){
+			if (command == "LS")
 			continue;
+		}
 		_command = command;
 		if (command == "CAP")
 			continue;
@@ -394,7 +397,8 @@ void Server::commandPrivmsg(std::string argument, int fd) {
 		std::map<int, Client *> tmpChannelList = tmpChannel->second.getClients();
 		for (std::map<int, Client *>::iterator it = tmpChannelList.begin(); it != tmpChannel->second.getClients().end(); it++){
 				std::string tmpMsg = ":" + _clients[fd].getNickName() + " PRIVMSG " + target + " :" + msg + "\r\n";
-				send(it->second->getFd(), &tmpMsg, tmpMsg.length(), 0);
+				sendMsg(tmpMsg, it->second->getFd());
+				// send(it->second->getFd(), &tmpMsg, tmpMsg.length(), 0);
 			}
 		
 	}
