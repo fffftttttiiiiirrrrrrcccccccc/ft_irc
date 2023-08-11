@@ -58,13 +58,16 @@ class Server{
 		std::vector<std::string> splitComma(std::string str);
 
 		//구현완료
-
-		//구현중
-		void commandQuit(std::string argument, int fd); // 서버와 접속 끊기 /quit 메세지 (메세지는 서버에 남기는 용도)
-		void commandJoin(std::string argument, int fd); // 채널이 존재ㅇ하는지(어떤 타입 인지), 없다면 생성하고 오피 주기
-		void commandNick(std::string argument, int fd); // 다른 클라이언트 중에 닉네임 중복여부 확인
+		void commandJoin(std::string argument, int fd); //
+		void commandNick(std::string argument, int fd); //
 		void commandPass(std::string argument, int fd); //
 		void commandUser(std::string argument, int fd); // 다른 클라이언트 중에 유저 중복여부 확인
+		//구현중
+		void commandQuit(std::string argument, int fd); // 서버와 접속 끊기 /quit 메세지 (메세지는 서버에 남기는 용도)
+		
+		
+
+		
 		void commandPart(std::string argument, int fd); //채널에서 나오면서  op인지도 확인. /part #채널명 메세지
 		void commandPrivmsg(std::string argument, int fd); // 이건 메세지 전달
 		void commandNotice(std::string argument, int fd); // 이건 공지로 메세지 전달 이건 에러처리가 없음.

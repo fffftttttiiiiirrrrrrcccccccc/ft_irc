@@ -274,8 +274,10 @@ void	Server::commandJoin(std::string argument, int fd) {
 	std::string			password;
 
 	str >> channel >> password;//ERR_NEEDMOREPARAMS (461): 인자가 부족
-	if (channel == "")
-		return ;
+	if (channel == ""){
+		sendMsg(RPL_461(_clients[fd].getNickName(), "JOIN"), fd);
+        return ;
+	}
 	std::vector<std::string> vecChannel = splitComma(channel);
 	for (unsigned long i = 0 ; i < vecChannel.size(); i++) {
 		std::map<std::string, Channel>::iterator chIt = _channels.find(vecChannel[i]);
@@ -290,24 +292,34 @@ void	Server::commandJoin(std::string argument, int fd) {
 		}
 		else{
 			std::vector<std::string> vecPassword = splitComma(password);
-			if (chIt->second.isInClinet(fd)) //ERR_NOTONCHANNEL (442): 사용자가 이미 채널에 있음
+			if (chIt->second.isInClinet(fd)) {//ERR_NOTONCHANNEL (442): 사용자가 이미 채널에 있음
+                sendMsg(RPL_442(_clients[fd].getNickName(), chIt->second.getChannelName()), fd);
+                return ;
+            }
+			if (chIt->second.getIsInviteMode()) {//ERR_INVITEONLYCHAN (473):초대만 가능모드
+				sendMsg(RPL_473(_clients[fd].getNickName(), chIt->second.getChannelName()), fd);
+                return ;
+            }
+			if (chIt->second.getIsLimitMode() && !chIt->second.isJoinalbe()){ //ERR_CHANNELISFULL (471): 인원이 꽉참
+				sendMsg(RPL_471(_clients[fd].getNickName(), chIt->second.getChannelName()), fd);
 				return ;
-			if (chIt->second.getIsInviteMode()) //ERR_INVITEONLYCHAN (473):초대만 가능모드
-				return ;
-			if (chIt->second.getIsLimitMode() && !chIt->second.isJoinalbe()) //ERR_CHANNELISFULL (471): 인원이 꽉참
-				return ;
+            }
 			if (chIt->second.getIsKeyMode() ){
-                if (vecPassword.size() < i)
+                if (vecPassword.size() < i){
+                    sendMsg(RPL_475(_clients[fd].getNickName(), chIt->second.getChannelName()), fd);
+                return ;
+            }
+                else if (chIt->second.getPassword() != vecPassword[i]){
+                    sendMsg(RPL_475(_clients[fd].getNickName(), chIt->second.getChannelName()), fd);
                     return ;
-                else if (chIt->second.getPassword() != vecPassword[i])
-                    return ;
+                }
             }
 			chIt->second.addClinetInChannel(fd, &_clients[fd], "");
 			_clients[fd].addChannel(&chIt->second);
 			// :aa!aa@localhost JOIN :#zxc
 			std::string joinMsg = ":" +_clients[fd].getNickName() + " JOIN " + chIt->second.getChannelName() + "\r\n";
 			sendMsg(joinMsg, fd);
-			sendMsg(RPL_332(_clients[fd].getNickName(), chIt->second.getChannelName(), chIt->second.getTopic()), fd);
+			sendMsg(RPL_332(_clients[fd].getNickName(), chIt->second.getChannelName(), chIt->second.getTopic() == "" ? " * NONE * " : chIt->second.getTopic()), fd);
 			//RPL_TOPIC (332): 채널의 토픽을 클라이언트에게 전달합니다. 채널의 토픽 정보를 알려주는 역할을 합니다.
 		}
 	}
@@ -317,6 +329,8 @@ void Server::commandNick(std::string argument, int fd) {
 
 	std::istringstream	str(argument);
 	std::string nickName;
+	std::string beforeNickName;
+	beforeNickName = _clients[fd].getNickName();
 	std::getline(str, nickName, ' ');
 	if (nickName == ""){
 		sendMsg(RPL_431(_clients[fd].getNickName()),fd);
@@ -333,15 +347,28 @@ void Server::commandNick(std::string argument, int fd) {
 		}
 	}
 	_clients[fd].setNickName(nickName);
+	// :aa!aa@localhost NICK zzz
+	std::string nickMsg = ":" + beforeNickName + " NICK " + _clients[fd].getNickName() + "\r\n";
+	sendMsg(nickMsg, fd);
 }
 
 void Server::commandPass(std::string argument, int fd) {
 	std::istringstream	str(argument);
 	std::string password;
-	str >> password;
+	if (_clients[fd].getPassword() != ""){
+		sendMsg(RPL_462(_clients[fd].getNickName()), fd);
+		return ;
+	}
+	password = "";
+	while (std::getline(str, password, ' '))
+		;
+	if (password == ""){
+		sendMsg(RPL_461("*", "PASS"),fd);
+		return ;
+	}
 	_clients[fd].setPassword(password);
-	std::cout << "server password : " << _password << "1" << std::endl;
-	std::cout << "client password : " << _clients[fd].getPassword() << "1" <<std::endl;
+	std::cout << "server password : " << _password << std::endl;
+	std::cout << "client password : " << _clients[fd].getPassword() <<std::endl;
 }
 
 void Server::commandUser(std::string argument, int fd) {
