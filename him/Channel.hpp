@@ -35,6 +35,7 @@ class Channel {
 		std::string getChannelName();
 		std::string getTopic();
 		std::string getPassword();
+		std::vector<int> getClientsFd();
 		void	addClinetInChannel(int fd, Client* client, std::string password);
 		void 	removeClinetInChannel(int fd);
 
@@ -63,7 +64,7 @@ class Channel {
 
 		void	inviteClient(int fd, Client *client);
 
-		void	partClinet(int fd, std::string msg); // 채널 메세지 보내기 추가해야함.
+		void	partClinet(int fd); // 채널 메세지 보내기 추가해야함.
 
 		//invite함수 추가해야함.
 

@@ -24,6 +24,13 @@ void Server::sendMsg(std::string msg, int fd){
 	send(fd, msg.c_str(), msg.size(), 0);
 }
 
+void Server::sendMsgVector(std::string msg, std::vector<int> fd){
+	for (std::vector<int>::iterator it = fd.begin(); it != fd.end(); it++)
+		send(*it, msg.c_str(), msg.size(), 0);
+	std::cout << std::endl;
+	std::cout << msg << std::endl;
+}
+
 void Server::printClientList(){
 	std::cout << " ClientList : " ;
 	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); it++){
@@ -355,13 +362,11 @@ void Server::commandNick(std::string argument, int fd) {
 void Server::commandPass(std::string argument, int fd) {
 	std::istringstream	str(argument);
 	std::string password;
-	if (_clients[fd].getPassword() != ""){
+	if (_clients[fd].getPassword() == _password){
 		sendMsg(RPL_462(_clients[fd].getNickName()), fd);
 		return ;
 	}
-	password = "";
-	while (std::getline(str, password, ' '))
-		;
+	str >> password;
 	if (password == ""){
 		sendMsg(RPL_461("*", "PASS"),fd);
 		return ;
@@ -386,7 +391,10 @@ void Server::commandUser(std::string argument, int fd) {
 		sendMsg(RPL_462(_clients[fd].getNickName()),fd);
 		return ;
 	}
-	_clients[fd].setUserName(argument);
+	_clients[fd].setUserName(userName);
+	_clients[fd].setHostName(hostName);
+	_clients[fd].setServerName(serverName);
+	_clients[fd].setRealName(realName);
 	sendMsg(RPL_001(_clients[fd].getNickName()),fd);
 	sendMsg(RPL_002(_clients[fd].getNickName()),fd);
 	sendMsg(RPL_003(_clients[fd].getNickName()),fd);
@@ -403,15 +411,42 @@ void Server::commandPart(std::string argument, int fd) {
 	std::string			channel;
 	std::string			msg;
 
-	str >> channel >> msg;
-	std::map<std::string, Channel>::iterator it = _channels.find(channel);
-	if (it != _channels.end())
-		it->second.partClinet(fd, msg);
-	else {
-		; //채널이 없을 때 예외처리
+	str >> channel >> msg;//ERR_NEEDMOREPARAMS (461): 인자가 부족
+	if (channel == ""){
+		sendMsg(RPL_461(_clients[fd].getNickName(), "JOIN"), fd);
+        return ;
 	}
+	std::cout << std::endl;
+	std::cout << "test1"<< std::endl;
+	std::vector<std::string> vecChannel = splitComma(channel);
+	for (unsigned long i = 0 ; i < vecChannel.size(); i++) {
+		std::map<std::string, Channel>::iterator chIt = _channels.find(vecChannel[i]);
+		if (chIt == _channels.end()){
+			sendMsg(RPL_403(_clients[fd].getNickName(), vecChannel[i]),fd);
+			return ;
+		}
+		if (!_clients[fd].findChannel(vecChannel[i])){
+			sendMsg(RPL_442(_clients[fd].getNickName(),vecChannel[i]),fd);
+			return ;
+		}
+		// wada has left
+		// :wada!wada@192.168.45.17 PART #1234 :asd
+		
+		std::cout << std::endl;
+		std::cout << _clients[fd].getNickName() << std::endl;
+		std::cout << _clients[fd].getUserName() << std::endl;
+		std::cout << _clients[fd].getHostName() << std::endl;
+		
+		sendMsgVector(RPL_PARTMSG(_clients[fd].getNickName(), _clients[fd].getUserName(), _clients[fd].getHostName(), vecChannel[i], msg), chIt->second.getClientsFd());
+		chIt->second.partClinet(fd);
+		_clients[fd].removeChannel(vecChannel[i]);
+		std::cout << std::endl;
+		std::cout << "test2"<< std::endl;
+	}
+	std::cout << std::endl;
+	std::cout << "test3"<< std::endl;
 }
-
+// :wada!wada@192.168.45.17 PART #1234 :asd
 void Server::commandPrivmsg(std::string argument, int fd) {
 	std::istringstream	str(argument);
 	
@@ -420,9 +455,9 @@ void Server::commandPrivmsg(std::string argument, int fd) {
 	Client *tmpClient;
 	std::string tmpMsg;
 
-	str >> target >> msg;
-	
-	if (target == "" || msg == "")
+	str >> target;
+	std::getline(str, msg);
+	if (target == "" || msg.length() == 0)
 		return ;
 	if (target[0] == '#'){
 		std::map<std::string, Channel>::iterator tmpChannel = _channels.find(target);

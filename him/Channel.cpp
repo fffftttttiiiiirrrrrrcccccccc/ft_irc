@@ -95,11 +95,8 @@ void Channel::addOpClinet(int fd){
 		_opList.push_back(fd);
 }
 
-void Channel::partClinet(int fd, std::string msg){
+void Channel::partClinet(int fd){
 	removeClinetInChannel(fd);
-	if (msg != "")
-		return ;// 채널에 메세지 남기기
-
 }
 
 bool Channel::isOpClient(int fd){
@@ -146,4 +143,16 @@ void	Channel::inviteClient(int fd, Client *client) {
 
 std::string Channel::getChannelName(){
 	return _channelName;
+}
+
+std::vector<int> Channel::getClientsFd(){
+	std::vector<int> ret;
+	std::cout << std::endl;
+	std::cout << _channelName << " fd list : ";
+	for (std::map<int, Client *>::iterator it = _clients.begin(); it != _clients.end(); it++ ){
+		ret.push_back(it->first);
+		std::cout << it->first;
+	}
+	std::cout << std::endl;
+	return ret;
 }

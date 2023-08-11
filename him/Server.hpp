@@ -42,6 +42,7 @@ class Server{
 		Server &operator=(const Server &rhs);
 		void signal_handler(int signo);
 		void sendMsg(std::string msg, int fd);
+		void sendMsgVector(std::string msg, std::vector<int> fd);
 
 		void	sockCreat();
 		int		getSocket();

@@ -1,9 +1,14 @@
 #ifndef RPL_HPP
 #define RPL_HPP
 
+#include "Client.hpp"
+
+
 const static std::string server_name = "irccc ";
 const static std::string col_server_name = ":irccc ";
 const static std::string version = "1_try ";
+
+#define RPL_PARTMSG(nick, user, host, channel_name, part_msg_) ":" + nick + "!" + user + "@" + host + " " + "PART" + " " + channel_name + " :" + part_msg_ + "\r\n"
 
 #define RPL_001(client) (col_server_name + "001 " + client + \
 " :Welcome to the Internet Relay Network " + client + "\r\n")
