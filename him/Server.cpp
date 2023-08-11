@@ -280,10 +280,13 @@ void	Server::commandJoin(std::string argument, int fd) {
 	for (unsigned long i = 0 ; i < vecChannel.size(); i++) {
 		std::map<std::string, Channel>::iterator chIt = _channels.find(vecChannel[i]);
 		if (chIt == _channels.end()) { //채널이 없으므로 만들고 넣어줌
-			Channel newChannel(channel);
-			_channels[channel] = newChannel;
-			_channels[channel].addClinetInChannel(fd, &_clients[fd], "");
-			_clients[fd].addChannel(&_channels[channel]);
+			Channel newChannel(vecChannel[i]);
+			_channels[vecChannel[i]] = newChannel;
+			_channels[vecChannel[i]].addClinetInChannel(fd, &_clients[fd], "");
+			_clients[fd].addChannel(&_channels[vecChannel[i]]);
+			std::string joinMsg = ":" +_clients[fd].getNickName() + " JOIN " + vecChannel[i] + "\r\n";
+			sendMsg(joinMsg, fd);
+			sendMsg(RPL_332(_clients[fd].getNickName(), vecChannel[i], newChannel.getTopic()), fd);
 		}
 		else{
 			std::vector<std::string> vecPassword = splitComma(password);
@@ -402,8 +405,7 @@ void Server::commandPrivmsg(std::string argument, int fd) {
 		for (std::map<int, Client *>::iterator it = tmpChannelList.begin(); it != tmpChannelList.end(); it++){
 				std::string tmpMsg = ":" + _clients[fd].getNickName() + " PRIVMSG " + target + " :" + msg + "\r\n";
                 if (it->second->getFd() != fd)
-				    sendMsg(tmpMsg, it->second->getFd());
-				// send(it->second->getFd(), &tmpMsg, tmpMsg.length(), 0);
+					sendMsg(tmpMsg, it->second->getFd());
 			}
 		
 	}
