@@ -293,9 +293,13 @@ void	Server::commandJoin(std::string argument, int fd) {
 				return ;
 			if (chIt->second.getIsLimitMode() && !chIt->second.isJoinalbe()) //ERR_CHANNELISFULL (471): 인원이 꽉참
 				return ;
-			if (chIt->second.getIsKeyMode() && vecPassword.size() < i && chIt->second.getPassword() != vecPassword[i])  //ERR_BADCHANNELKEY (475):  비밀번호 틀림
-				return ;
-			chIt->second.addClinetInChannel(fd, &_clients[fd], vecPassword[i]);
+			if (chIt->second.getIsKeyMode() ){
+                if (vecPassword.size() < i)
+                    return ;
+                else if (chIt->second.getPassword() != vecPassword[i])
+                    return ;
+            }
+			chIt->second.addClinetInChannel(fd, &_clients[fd], "");
 			_clients[fd].addChannel(&chIt->second);
 			// :aa!aa@localhost JOIN :#zxc
 			std::string joinMsg = ":" +_clients[fd].getNickName() + " JOIN " + chIt->second.getChannelName() + "\r\n";
@@ -395,9 +399,10 @@ void Server::commandPrivmsg(std::string argument, int fd) {
 		if (tmpChannel == _channels.end())
 			return ;
 		std::map<int, Client *> tmpChannelList = tmpChannel->second.getClients();
-		for (std::map<int, Client *>::iterator it = tmpChannelList.begin(); it != tmpChannel->second.getClients().end(); it++){
+		for (std::map<int, Client *>::iterator it = tmpChannelList.begin(); it != tmpChannelList.end(); it++){
 				std::string tmpMsg = ":" + _clients[fd].getNickName() + " PRIVMSG " + target + " :" + msg + "\r\n";
-				sendMsg(tmpMsg, it->second->getFd());
+                if (it->second->getFd() != fd)
+				    sendMsg(tmpMsg, it->second->getFd());
 				// send(it->second->getFd(), &tmpMsg, tmpMsg.length(), 0);
 			}
 		
