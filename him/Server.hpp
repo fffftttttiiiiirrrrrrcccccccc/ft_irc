@@ -80,6 +80,7 @@ class Server{
 		//구현해야함
 
 		void commandWho(std::string argument, int fd);
+		void commandNames(std::string argument, int fd);
 		
 
 		void printClientList();

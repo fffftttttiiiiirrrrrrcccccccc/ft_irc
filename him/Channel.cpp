@@ -137,8 +137,32 @@ bool	Channel::isJoinalbe() {
 	return true;
 }
 
-void	Channel::inviteClient(int fd, Client *client) {
-	_clients[fd] = client;
+std::vector<int> Channel::getInviteList(){
+	return _inviteList;
+}
+
+void Channel::addInvieList(int fd){
+	std::vector<int>::iterator it = std::find(_inviteList.begin(), _inviteList.end(), fd);
+	if (it == _inviteList.end())
+		_inviteList.push_back(fd);
+}
+
+bool Channel::isInviteClient(int fd){
+	std::vector<int>::iterator it = std::find(_inviteList.begin(), _inviteList.end(), fd);
+	if (it != _inviteList.end())
+		return true;
+	return false;
+}
+
+bool	Channel::inviteJoinClient(int fd, Client *client) {
+	if (isInviteClient(fd)){
+		_clients[fd] = client;
+		std::vector<int>::iterator it = std::find(_inviteList.begin(), _inviteList.end(), fd);
+		_inviteList.erase(it);
+		return true;
+	}
+	return false;
+		
 }
 
 std::string Channel::getChannelName(){
