@@ -37,11 +37,13 @@ const static std::string version = "1_try ";
 #define RPL_341(client, nick, channel) (col_server_name + "341 " + client + \
 " " + nick + " " + channel + "\r\n")
 
-#define RPL_353(client, channel, symbol, clients) (col_server_name + "353 " + client + \
-" " + channel + " " + symbol + " " + channel + " " + clients + "\r\n") // 구현 아직 못함, 채널에 있는 유저들 출력
+// :192.168.45.17 353 zzzz = #zaza :@zzzz aa 
+// :192.168.45.17 366 zzzz #zaza :End of NAMES list
+#define RPL_353(client, channel, clients) (col_server_name + " 353 " + client + \
+" = " + channel + " :" + clients + "\r\n") // 구현 아직 못함, 채널에 있는 유저들 출력
 
-#define RPL_366(client, channel) (col_server_name + "366 " + client + \
-" " + channel + " :End of /NAMES list\r\n")
+#define RPL_366(client, channel) (col_server_name + " 366 " + client + \
+" = " + channel + " :End of NAMES list\r\n")
 
 #define RPL_375(client) (col_server_name + "375 " + client + \
 " :- " + server_name + "Message of the day - " + "\r\n")
@@ -59,7 +61,7 @@ const static std::string version = "1_try ";
 " " + channel + " :No such channel\r\n")
 
 #define RPL_404(client, channel) (col_server_name + "404 " + client + \
-" " + channel + " :Cannot send to channel\r\n")
+" " + channel + " :Cannot send to Channel OR Client\r\n")
 
 #define RPL_405(client, channel) (col_server_name + "405 " + client + \
 " " + channel + " :You have joined too many channel\r\n")
@@ -88,6 +90,8 @@ const static std::string version = "1_try ";
 #define RPL_442(client, channel) (col_server_name + "442 " + client + \
 " " + channel + " :You're not on that channel\r\n")
 
+
+//:10.19.202.226 461 zcxzx :JOIN :Not enough parameters
 #define RPL_461(client, command) (col_server_name + "461 " + client + \
 " " + command + " :Not enough parameters\r\n")
 
@@ -98,10 +102,10 @@ const static std::string version = "1_try ";
 " :Password incorrect\r\n")
 
 #define RPL_467(client, channel) (col_server_name + "467 " + client + \
-" " + channel + " :Channel key already set\r\n") //이제 안쓰이는듯
-
+" :" + channel + " :Channel key already set\r\n") //이제 안쓰이는듯
+// :10.19.202.226 471 zzzzz :JOIN :#1234 :Cannot join channel (+l)
 #define RPL_471(client, channel) (col_server_name + "471 " + client + \
-" " + channel + " :Cannot join channel (+l)\r\n")
+" :" + channel + " :Cannot join channel (+l)\r\n")
 
 #define RPL_472(client, modechar) (col_server_name + "472 " + client + \
 " " + modechar + " :is unknown mode char to me\r\n")
