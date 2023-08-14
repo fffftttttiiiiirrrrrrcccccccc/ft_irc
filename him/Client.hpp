@@ -31,7 +31,7 @@ class Client{
 		void setNickName(std::string str);
 		void setUserName(std::string str);
 		void setPassword(std::string str);
-		void seHosttName(std::string str);
+		void setHostName(std::string str);
 		void setServerName(std::string str);
 		void setRealName(std::string str);
 		void setTmpCmd(std::string str);
@@ -40,7 +40,7 @@ class Client{
 		std::map<std::string, Channel *> getChannels();
 		std::string getNickName();
 		std::string getUserName();
-		std::string geHosttName();
+		std::string getHostName();
 		std::string getServerName();
 		std::string getRealName();
 		std::string getPassword();
@@ -48,6 +48,8 @@ class Client{
 
 		void welcomeMsg();
 		void addChannel(Channel *channel);
+		bool findChannel(std::string channelName);
+		bool removeChannel(std::string channelName);
 
 
 		//join

@@ -15,6 +15,7 @@ class Channel {
 		std::string _channelName;
 
 		bool	_isInviteOnly; // 초대한 사람만 들어갈 수 있음. /mode #채널명 +i
+		std::vector<int> _inviteList;
 
 		bool		_isTopic; // op만 topic설정 가능 /mode #채널명 +t
 		std::string _topic;
@@ -35,6 +36,8 @@ class Channel {
 		std::string getChannelName();
 		std::string getTopic();
 		std::string getPassword();
+		std::vector<int> getClientsFd();
+		std::vector<int> getInviteList();
 		void	addClinetInChannel(int fd, Client* client, std::string password);
 		void 	removeClinetInChannel(int fd);
 
@@ -43,6 +46,7 @@ class Channel {
 		void	setIsKey(bool isKey);
 		void	setIsOperator(bool isOperator);
 		void	setIsLimit(bool isLimit);
+		void	addInvieList(int fd);
 
 		void 	addOpClinet(int fd);
 		void	removeOpClient(int fd);
@@ -60,10 +64,11 @@ class Channel {
 
 		bool	isOpClient(int fd);
 		bool	isInClinet(int fd);
+		bool	isInviteClient(int fd);
 
-		void	inviteClient(int fd, Client *client);
+		bool	inviteJoinClient(int fd, Client *client);
 
-		void	partClinet(int fd, std::string msg); // 채널 메세지 보내기 추가해야함.
+		void	partClinet(int fd); // 채널 메세지 보내기 추가해야함.
 
 		//invite함수 추가해야함.
 

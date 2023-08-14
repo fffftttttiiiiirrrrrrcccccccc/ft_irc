@@ -17,7 +17,7 @@ void Client::initClient(int fd) {
 	_isLogin = false;
 }
 
-void Client::seHosttName(std::string str){
+void Client::setHostName(std::string str){
 	_hostName = str;
 }
 void Client::setServerName(std::string str){
@@ -26,7 +26,7 @@ void Client::setServerName(std::string str){
 void Client::setRealName(std::string str){
 	_realName = str;
 }
-std::string Client::geHosttName(){
+std::string Client::getHostName(){
 	return _hostName;
 }
 std::string Client::getServerName(){
@@ -92,4 +92,19 @@ void Client::welcomeMsg(){
 
 void Client::addChannel(Channel *channel){
 	_clientChannels[channel->getChannelName()] = channel;
+}
+
+bool Client::findChannel(std::string channelName){
+	std::map<std::string, Channel *>::iterator it = _clientChannels.find(channelName);
+	if (it == _clientChannels.end())
+		return false;
+	return true;
+}
+
+bool Client::removeChannel(std::string channelName){
+	std::map<std::string, Channel *>::iterator it = _clientChannels.find(channelName);
+	if (it == _clientChannels.end())
+		return false;
+	_clientChannels.erase(it);
+	return true;
 }
