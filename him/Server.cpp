@@ -182,6 +182,7 @@ void	Server::get_command(std::string buffer, int fd) {
 		if (command == "CAP")
 			continue;
 		std::getline(str, argument);
+		std::cout << "Client : " << _clients[fd].getNickName() << std::endl;
 		std::cout << "Command : " << command << std::endl;
 		std::cout << "Argument : " << argument << std::endl;
 		if (_password != _clients[fd].getPassword()){
@@ -216,8 +217,8 @@ void	Server::get_command(std::string buffer, int fd) {
 				commandPart(argument, fd);
 			else if(command == "privmsg" || command == "PRIVMSG")
 				commandPrivmsg(argument, fd);
-			else if(command == "notice" || command == "NOTICE")
-				commandNotice(argument, fd);
+			// else if(command == "notice" || command == "NOTICE")
+			// 	commandNotice(argument, fd);
 			else if(command == "kick" || command == "KICK")
 				commandKick(argument, fd);
 			else if(command == "invite" || command == "INVITE")
@@ -228,6 +229,8 @@ void	Server::get_command(std::string buffer, int fd) {
 				commandMode(argument, fd);
 			else if(command == "ping" || command == "PING")
 				commandPing(argument, fd);
+			else if(command == "pong" || command == "PONG")
+				commandPong(argument, fd);
 			_command = "";
 		}
 	}
@@ -297,7 +300,7 @@ void	Server::commandJoin(std::string argument, int fd) {
 			std::string joinMsg = ":" +_clients[fd].getNickName() + " JOIN " + vecChannel[i] + "\r\n";
 			sendMsg(joinMsg, fd);
 			//353 366추가
-			sendMsg(RPL_353(_clients[fd].getNickName(), channel, "=", "@" + _clients[fd].getNickName() ), fd);
+			sendMsg(RPL_353(_clients[fd].getNickName(), channel, _clients[fd].getNickName() ), fd);
 			sendMsg(RPL_366(_clients[fd].getNickName(), channel), fd);
 			//353 366추가
 			//sendMsg(RPL_332(_clients[fd].getNickName(), vecChannel[i], newChannel.getTopic()), fd);
@@ -308,11 +311,11 @@ void	Server::commandJoin(std::string argument, int fd) {
 			if (chIt->second.isInClinet(fd)) {//ERR_NOTONCHANNEL (442): 사용자가 이미 채널에 있음
 				sendMsg(RPL_442(_clients[fd].getNickName(), chIt->second.getChannelName()), fd);
 				return ;
-      }
+			}
 			if (chIt->second.getIsLimitMode() && !chIt->second.isJoinalbe()){ //ERR_CHANNELISFULL (471): 인원이 꽉참
 				sendMsg(RPL_471(_clients[fd].getNickName(), chIt->second.getChannelName()), fd);
 				return ;
-      }
+			}
 			if (chIt->second.getIsInviteMode()) {//ERR_INVITEONLYCHAN (473):초대만 가능모드
 				if (chIt->second.inviteJoinClient(fd, &_clients[fd])){
 					_clients[fd].addChannel(&chIt->second);
@@ -322,16 +325,10 @@ void	Server::commandJoin(std::string argument, int fd) {
 					//353 366추가
 					std::vector<int> tmpChannelList = chIt->second.getClientsFd();
 					std::string clients_list = "";
-					for (std::vector<int>::iterator it = tmpChannelList.begin(); it != tmpChannelList.end(); it++){
-					{
-						if (chIt->second.isOpClient(*it))
-							clients_list = clients_list + "@" + _clients[*it].getNickName() + " ";
-						else
+					for (std::vector<int>::iterator it = tmpChannelList.begin(); it != tmpChannelList.end(); it++)
 							clients_list = clients_list + _clients[*it].getNickName() + " ";
-					}
-					}
 					
-					sendMsg(RPL_353(_clients[fd].getNickName(), channel, "=", clients_list), fd);
+					sendMsg(RPL_353(_clients[fd].getNickName(), channel, clients_list), fd);
 					sendMsg(RPL_366(_clients[fd].getNickName(), channel), fd);
 					//353 366추가
 
@@ -340,7 +337,7 @@ void	Server::commandJoin(std::string argument, int fd) {
 				}
 				sendMsg(RPL_473(_clients[fd].getNickName(), chIt->second.getChannelName()), fd);
         return ;
-      }
+    }
 
 			if (chIt->second.getIsKeyMode() ){
 					if (vecPassword.size() < i){
@@ -354,23 +351,18 @@ void	Server::commandJoin(std::string argument, int fd) {
 			}
 			chIt->second.addClinetInChannel(fd, &_clients[fd], "");
 			_clients[fd].addChannel(&chIt->second);
-			// :aa!aa@localhost JOIN :#zxc
+			// :aa!aa@localhost JOIN :#zxcx
 			std::string joinMsg = ":" +_clients[fd].getNickName() + " JOIN " + chIt->second.getChannelName() + "\r\n";
 			sendMsgVector(joinMsg, chIt->second.getClientsFd());
 			// sendMsg(joinMsg, fd);
 			//353 366추가
 			std::vector<int> tmpChannelList = chIt->second.getClientsFd();
 			std::string clients_list = "";
-			for (std::vector<int>::iterator it = tmpChannelList.begin(); it != tmpChannelList.end(); it++){
-			{
-				if (chIt->second.isOpClient(*it))
-					clients_list = clients_list + "@" + _clients[*it].getNickName() + " ";
-				else
+			for (std::vector<int>::iterator it = tmpChannelList.begin(); it != tmpChannelList.end(); it++)
 					clients_list = clients_list + _clients[*it].getNickName() + " ";
-			}
-			}
 			
-			sendMsg(RPL_353(_clients[fd].getNickName(), channel, "=", clients_list), fd);
+
+			sendMsg(RPL_353(_clients[fd].getNickName(), channel, clients_list), fd);
 			sendMsg(RPL_366(_clients[fd].getNickName(), channel), fd);
 			//353 366추가
 			sendMsg(RPL_332(_clients[fd].getNickName(), chIt->second.getChannelName(), chIt->second.getTopic() == "" ? " * NONE * " : chIt->second.getTopic()), fd);
@@ -392,7 +384,7 @@ void Server::commandNick(std::string argument, int fd) {
 	}
 	//string back 함수 수정 11버전 함수
 	if (!nickName.empty() && nickName[nickName.length() - 1] == '\r') {
-		nickName[nickName.length() - 1] = 0;
+		nickName.erase(nickName.size() - 1);
 	}
 	if (nickName.length() > 9) {
 		sendMsg(RPL_432(_clients[fd].getNickName(), nickName),fd);
@@ -490,6 +482,8 @@ void Server::commandPart(std::string argument, int fd) {
 		sendMsgVector(RPL_PARTMSG(_clients[fd].getNickName(), _clients[fd].getUserName(), _clients[fd].getHostName(), vecChannel[i], msg), chIt->second.getClientsFd());
 		chIt->second.partClinet(fd);
 		_clients[fd].removeChannel(vecChannel[i]);
+		if (chIt->second.getClients().size() == 0)
+			_channels.erase(chIt);
 	}
 }
 // :wada!wada@192.168.45.17 PART #1234 :asd
@@ -520,11 +514,15 @@ void Server::commandPrivmsg(std::string argument, int fd) {
 		std::map<int, Client *> tmpChannelList = tmpChannel->second.getClients();
 		for (std::map<int, Client *>::iterator it = tmpChannelList.begin(); it != tmpChannelList.end(); it++){
 				std::string tmpMsg = ":" + _clients[fd].getNickName() + " PRIVMSG " + target + " :" + msg + "\r\n";
-          if (it->second->getFd() != fd)
+        if (it->second->getFd() != fd)
 					sendMsg(tmpMsg, it->second->getFd());
 			}
 	}
 	else {
+		if (target == _clients[fd].getNickName()){
+			sendMsg(RPL_404(_clients[fd].getNickName(), target), fd);
+			return ;
+		}
 		tmpClient = findClient(target);
 		if (tmpClient == NULL){
 			sendMsg(RPL_401(_clients[fd].getNickName(), target), fd);
@@ -536,52 +534,54 @@ void Server::commandPrivmsg(std::string argument, int fd) {
 	}
 }
 
-void Server::commandNotice(std::string argument, int fd){
-	//pricvmsg와 에러처리 거의 똑같이 하면 될 것 같음
-	std::istringstream	str(argument);
+// void Server::commandNotice(std::string argument, int fd){
+// 	//pricvmsg와 에러처리 거의 똑같이 하면 될 것 같음
+// 	std::istringstream	str(argument);
 	
-	std::string			target;
-	std::string			msg;
-	Client *tmpClient;
-	std::string tmpMsg;
+// 	std::string			target;
+// 	std::string			msg;
+// 	Client *tmpClient;
+// 	std::string tmpMsg;
 
-	str >> target >> msg;
+// 	str >> target;
+// 	std::getline(str, msg);
 	
-	if (target == ""){
-		sendMsg(RPL_411(_clients[fd].getNickName(), "PRIVMSG"),fd);
-		return ;
-	}
-	if (msg.length() == 0){
-		sendMsg(RPL_412(_clients[fd].getNickName(), "PRIVMSG"),fd);
-		return ;
-	}
-	if (target[0] == '#'){
-		std::map<std::string, Channel>::iterator tmpChannel = _channels.find(target);
-		if (tmpChannel == _channels.end()){
-			sendMsg(RPL_404(_clients[fd].getNickName(), target), fd);
-			return ;
-		}
-		//추가
-		Channel *tmpCh = &tmpChannel->second;
-		std::map<int, Client *> tmp = tmpCh->getClients();
-		for (std::map<int, Client *>::iterator it = tmp.begin(); it != tmp.end(); it++) {
-				std::string tmpMsg = ":" + _clients[fd].getNickName() + " NOTICE " + target + " :" + msg + "\r\n";
-				send(it->second->getFd(), &tmpMsg, tmpMsg.length(), 0);
-			}
-		
-	}
-	else {
-		tmpClient = findClient(target);
-		if (tmpClient == NULL){//ERR_NOSUCHNICK (401)
-			sendMsg(RPL_401(_clients[fd].getNickName(),target),fd);
-			return ;
-	}
-			// ":IRCserv 403 " + getList()[j].getNickname() + " " + nick + " :No such channel\r\n";
-		tmpMsg = ":" + _clients[fd].getNickName() + " NOTICE " + target + " :" + msg + "\r\n";
-		send(tmpClient->getFd(), &tmpMsg, tmpMsg.length(), 0);
-
-	}
-}
+// 	if (target == ""){
+// 		sendMsg(RPL_411(_clients[fd].getNickName(), "NOTICE"),fd);
+// 		return ;
+// 	}
+// 	if (msg.length() == 0){
+// 		sendMsg(RPL_412(_clients[fd].getNickName(), "NOTICE"),fd);
+// 		return ;
+// 	}
+// 	if (target[0] == '#'){
+// 		std::map<std::string, Channel>::iterator tmpChannel = _channels.find(target);
+// 		if (tmpChannel == _channels.end()){
+// 			sendMsg(RPL_404(_clients[fd].getNickName(), target),fd);//404
+// 			return ;
+// 		}
+// 		std::map<int, Client *> tmpChannelList = tmpChannel->second.getClients();
+// 		for (std::map<int, Client *>::iterator it = tmpChannelList.begin(); it != tmpChannelList.end(); it++){
+// 				std::string tmpMsg = ":" + _clients[fd].getNickName() + " PRIVMSG " + target + " :" + msg + "\r\n";
+//         if (it->second->getFd() != fd)
+// 					sendMsg(tmpMsg, it->second->getFd());
+// 			}
+// 	}
+// 	else {
+// 		if (target == _clients[fd].getNickName()){
+// 			sendMsg(RPL_404(_clients[fd].getNickName(), target), fd);
+// 			return ;
+// 		}
+// 		tmpClient = findClient(target);
+// 		if (tmpClient == NULL){
+// 			sendMsg(RPL_401(_clients[fd].getNickName(), target), fd);
+// 			return ;
+// 		}
+// 		// ":IRCserv 403 " + getList()[j].getNickname() + " " + nick + " :No such channel\r\n";
+// 		tmpMsg = ":" + _clients[fd].getNickName() + " NOTICE " + target + " :" + msg + "\r\n";
+// 		send(tmpClient->getFd(), &tmpMsg, tmpMsg.length(), 0);
+// 	}
+// }
 
 void Server::commandKick(std::string argument, int fd){
 	std::istringstream	str(argument);
@@ -840,10 +840,25 @@ void Server::commandPing(std::string argument, int fd){
 	str >>pingmsg;
 	if (pingmsg == ""){
 		sendMsg(RPL_461(_clients[fd].getNickName(), "PING"), fd);
-      return ;
+		return ;
 	}
 	sendMsg(":" + server_name + " PONG " + server_name + " " + pingmsg, fd);
 }
+
+void Server::commandPong(std::string argument, int fd){
+	//Pong메세지 보내기
+	std::istringstream	str(argument);
+
+	std::string			pongmsg;
+
+	str >>pongmsg;
+	if (pongmsg == ""){
+		sendMsg(RPL_461(_clients[fd].getNickName(), "PONG"), fd);
+		return ;
+	}
+	sendMsg(":" + server_name + " PONG " + server_name + " " + pongmsg, fd);
+}
+
 
 std::vector<std::string> Server::splitComma(std::string argument){
 	std::istringstream	str(argument);

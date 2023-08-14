@@ -91,7 +91,7 @@ void Channel::removeOpClient(int fd){
 
 void Channel::addOpClinet(int fd){
 	std::vector<int>::iterator it = std::find(_opList.begin(), _opList.end(), fd);
-	if (it != _opList.end())
+	if (it == _opList.end())
 		_opList.push_back(fd);
 }
 

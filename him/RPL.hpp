@@ -37,11 +37,13 @@ const static std::string version = "1_try ";
 #define RPL_341(client, nick, channel) (col_server_name + "341 " + client + \
 " " + nick + " " + channel + "\r\n")
 
-#define RPL_353(client, channel, symbol, clients) (col_server_name + "353 " + client + \
-" " + channel + " " + symbol + " " + channel + " " + clients + "\r\n") // 구현 아직 못함, 채널에 있는 유저들 출력
+// :192.168.45.17 353 zzzz = #zaza :@zzzz aa 
+// :192.168.45.17 366 zzzz #zaza :End of NAMES list
+#define RPL_353(client, channel, clients) (col_server_name + " 353 " + client + \
+" = " + channel + " :" + clients + "\r\n") // 구현 아직 못함, 채널에 있는 유저들 출력
 
-#define RPL_366(client, channel) (col_server_name + "366 " + client + \
-" " + channel + " :End of /NAMES list\r\n")
+#define RPL_366(client, channel) (col_server_name + " 366 " + client + \
+" = " + channel + " :End of NAMES list\r\n")
 
 #define RPL_375(client) (col_server_name + "375 " + client + \
 " :- " + server_name + "Message of the day - " + "\r\n")
@@ -59,7 +61,7 @@ const static std::string version = "1_try ";
 " " + channel + " :No such channel\r\n")
 
 #define RPL_404(client, channel) (col_server_name + "404 " + client + \
-" " + channel + " :Cannot send to channel\r\n")
+" " + channel + " :Cannot send to Channel OR Client\r\n")
 
 #define RPL_405(client, channel) (col_server_name + "405 " + client + \
 " " + channel + " :You have joined too many channel\r\n")
