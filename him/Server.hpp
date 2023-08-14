@@ -60,7 +60,7 @@ class Server{
 
 
 		//구현완료
-		
+		void commandMode(std::string argument, int fd); // 채널 모드 설정 op권한 있어야 함.
 
 		//구현중
 		void commandJoin(std::string argument, int fd); //
@@ -74,7 +74,7 @@ class Server{
 		void commandKick(std::string argument, int fd); // /kick #채널명 닉네임 메시지
 		void commandInvite(std::string argument, int fd); // 초대하기  /invite 닉네임 #채널명
 		void commandTopic(std::string argument, int fd); // topic설정 채널 모드 확인  op인지 확인
-		void commandMode(std::string argument, int fd); // 채널 모드 설정 op권한 있어야 함.
+
 		void commandPing(std::string argument, int fd);
 		void commandPong(std::string argument, int fd);
 
