@@ -284,7 +284,8 @@ void	Server::commandJoin(std::string argument, int fd) {
 	std::string			password;
 
 	str >> channel >> password;//ERR_NEEDMOREPARAMS (461): 인자가 부족
-	if (channel == ""){
+	std::cout << "1 " << channel << " 1" << std::endl;
+	if (channel.length() <= 1){
 		sendMsg(RPL_461(_clients[fd].getNickName(), "JOIN"), fd);
         return ;
 	}
@@ -308,10 +309,8 @@ void	Server::commandJoin(std::string argument, int fd) {
 		}
 		else{
 			std::vector<std::string> vecPassword = splitComma(password);
-			if (chIt->second.isInClinet(fd)) {//ERR_NOTONCHANNEL (442): 사용자가 이미 채널에 있음
-				sendMsg(RPL_442(_clients[fd].getNickName(), chIt->second.getChannelName()), fd);
+			if (chIt->second.isInClinet(fd))//ERR_NOTONCHANNEL (442): 사용자가 이미 채널에 있음
 				return ;
-			}
 			if (chIt->second.getIsLimitMode() && !chIt->second.isJoinalbe()){ //ERR_CHANNELISFULL (471): 인원이 꽉참
 				sendMsg(RPL_471(_clients[fd].getNickName(), chIt->second.getChannelName()), fd);
 				return ;
@@ -321,13 +320,11 @@ void	Server::commandJoin(std::string argument, int fd) {
 					_clients[fd].addChannel(&chIt->second);
 					std::string joinMsg = ":" +_clients[fd].getNickName() + " JOIN " + chIt->second.getChannelName() + "\r\n";
 					sendMsgVector(joinMsg, chIt->second.getClientsFd());
-
 					//353 366추가
 					std::vector<int> tmpChannelList = chIt->second.getClientsFd();
 					std::string clients_list = "";
 					for (std::vector<int>::iterator it = tmpChannelList.begin(); it != tmpChannelList.end(); it++)
 							clients_list = clients_list + _clients[*it].getNickName() + " ";
-					
 					sendMsg(RPL_353(_clients[fd].getNickName(), channel, clients_list), fd);
 					sendMsg(RPL_366(_clients[fd].getNickName(), channel), fd);
 					//353 366추가
@@ -775,13 +772,19 @@ void Server::commandMode(std::string argument, int fd) {
 		} //ERR_CHANOPRIVSNEEDED (482) 사용자가 op가 아님
 
 	if (mode[0] == '+') {
-		if (mode[1] == 'i')
+		if (mode[1] == 'i'){
 			chIt->second.setIsInviteOnly(true);
-		else if (mode[1] == 't')
+			// :zzzzz!a@10.19.202.226 MODE #ccc +l 2
+			sendMsg(":irccc MODE " + channel + " " + mode + "\r\n", fd);
+		}
+		else if (mode[1] == 't'){
 			chIt->second.setIsTopic(true);
+			sendMsg(":irccc MODE " + channel + " " + mode + "\r\n", fd);
+	}
 		else if (mode[1] == 'k'){
 			chIt->second.setIsKey(true);
 			chIt->second.setPassword(arg);
+			sendMsg(":irccc MODE " + channel + " " + mode + " " + arg + "\r\n", fd);
 		}
 		else if (mode[1] == 'o'){
 			Client *tmpClient = findClient(arg);
@@ -789,18 +792,18 @@ void Server::commandMode(std::string argument, int fd) {
 				sendMsg(RPL_441(_clients[fd].getNickName(), arg, channel) , fd);
 				return ;
 		} //ERR_USERNOTINCHANNEL (441): 클라이언트가 없음.
-
 			if (!chIt->second.isInClinet(tmpClient->getFd())) {
 				sendMsg(RPL_441(_clients[fd].getNickName(), arg, channel) , fd);
 				return ;
 		} //ERR_USERNOTINCHANNEL (441): 클라이언트가 없음.
-
 			chIt->second.addOpClinet(tmpClient->getFd());
+			sendMsg(":irccc MODE " + channel + " " + mode + " " + _clients[tmpClient->getFd()].getNickName() + "\r\n", fd);
 		}
 		else if (mode[1] == 'l') {
 			chIt->second.setIsLimit(true);
 			int num = atoi(arg.c_str());
 			chIt->second.setLimitClientNum(num);
+			sendMsg(":irccc MODE " + channel + " " + mode + " " + arg + "\r\n", fd);
 		}
 	}
 	else {
@@ -829,6 +832,7 @@ void Server::commandMode(std::string argument, int fd) {
 		else if (mode[1] == 'l')
 			chIt->second.setIsLimit(false);
 	}
+	
 }
 
 void Server::commandPing(std::string argument, int fd){

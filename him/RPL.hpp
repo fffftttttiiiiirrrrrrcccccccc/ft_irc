@@ -90,6 +90,8 @@ const static std::string version = "1_try ";
 #define RPL_442(client, channel) (col_server_name + "442 " + client + \
 " " + channel + " :You're not on that channel\r\n")
 
+
+//:10.19.202.226 461 zcxzx :JOIN :Not enough parameters
 #define RPL_461(client, command) (col_server_name + "461 " + client + \
 " " + command + " :Not enough parameters\r\n")
 
@@ -100,10 +102,10 @@ const static std::string version = "1_try ";
 " :Password incorrect\r\n")
 
 #define RPL_467(client, channel) (col_server_name + "467 " + client + \
-" " + channel + " :Channel key already set\r\n") //이제 안쓰이는듯
-
+" :" + channel + " :Channel key already set\r\n") //이제 안쓰이는듯
+// :10.19.202.226 471 zzzzz :JOIN :#1234 :Cannot join channel (+l)
 #define RPL_471(client, channel) (col_server_name + "471 " + client + \
-" " + channel + " :Cannot join channel (+l)\r\n")
+" :" + channel + " :Cannot join channel (+l)\r\n")
 
 #define RPL_472(client, modechar) (col_server_name + "472 " + client + \
 " " + modechar + " :is unknown mode char to me\r\n")
