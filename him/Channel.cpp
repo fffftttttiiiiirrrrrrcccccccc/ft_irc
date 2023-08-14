@@ -109,7 +109,11 @@ bool Channel::isOpClient(int fd){
 bool Channel::isInClinet(int fd) {
 	std::map<int, Client *>::iterator it = _clients.find(fd);
 	if (it == _clients.end())
+	{
+		std::cout << "없다~~~" << std::endl;
 		return false;
+	}
+		
 	return true;
 }
 

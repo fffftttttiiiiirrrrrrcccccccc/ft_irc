@@ -5,10 +5,12 @@ Server::~Server(){}
 Server::Server(int port, char *pass) {
 	_port = port;
 	_password = pass;
+	_serverSocket = 0;
 }
 void Server::serverInit(int port, char* pass){
 	_port = port;
 	_password = pass;
+	_serverSocket = 0;
 }
 std::map<int, Client> Server::getClients() {
 	return _clients;
@@ -62,8 +64,12 @@ void Server::sockCreat() {
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(_port);
 	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-
+	int reuse = 1;
+	if (setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) == -1)
+		exit (1);
+    	
 	if (bind(socketfd, (sockaddr *)&serverAddr, sizeof(serverAddr)) == -1) {
+		close(socketfd);
 		std::cout << "Socket bind failed" << std::endl;
 		exit(1);
 	}
@@ -90,12 +96,14 @@ void	Server::runServer() {
 		ret = poll(&_fds.front(), _fds.size(), -1);
 		if (ret < 0) {
 			std::cout << "Poll error" << std::endl;
+			close(_serverSocket);
 			exit(1);
 		}
 		if (_fds[0].revents && POLLIN) {
 			int clientSocketfd = accept(_serverSocket, NULL, NULL);
 			if (clientSocketfd < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
 					std::cout << "Socket accept failed" << std::endl;
+					close(_serverSocket);
 					exit(1);
 			}
 			struct pollfd fd;
@@ -302,8 +310,9 @@ void	Server::commandJoin(std::string argument, int fd) {
 			std::string joinMsg = ":" +_clients[fd].getNickName() + " JOIN " + vecChannel[i] + "\r\n";
 			sendMsg(joinMsg, fd);
 			//353 366추가
-			sendMsg(RPL_353(_clients[fd].getNickName(), chIt->second.getChannelName(), _clients[fd].getNickName() ), fd);
-			sendMsg(RPL_366(_clients[fd].getNickName(), chIt->second.getChannelName()), fd);
+			sendMsg(RPL_332(_clients[fd].getNickName(), vecChannel[i], " NONE "), fd);
+			sendMsg(RPL_353(_clients[fd].getNickName(), vecChannel[i], _clients[fd].getNickName() ), fd);
+			sendMsg(RPL_366(_clients[fd].getNickName(), vecChannel[i]), fd);
 			//353 366추가
 			//sendMsg(RPL_332(_clients[fd].getNickName(), vecChannel[i], newChannel.getTopic()), fd);
 			//새로 만든거라 토픽 확정적으로 없음
@@ -312,10 +321,12 @@ void	Server::commandJoin(std::string argument, int fd) {
 			std::vector<std::string> vecPassword = splitComma(password);
 			if (chIt->second.isInClinet(fd))//ERR_NOTONCHANNEL (442): 사용자가 이미 채널에 있음
                 continue;
+			std::cout << "넘어감~~" << std::endl;
 			if (chIt->second.getIsLimitMode() && !chIt->second.isJoinalbe()){ //ERR_CHANNELISFULL (471): 인원이 꽉참
 				sendMsg(RPL_471(_clients[fd].getNickName(), chIt->second.getChannelName()), fd);
                 continue;
 			}
+			// ok
 			if (chIt->second.getIsInviteMode()) {//ERR_INVITEONLYCHAN (473):초대만 가능모드
 				if (chIt->second.inviteJoinClient(fd, &_clients[fd])){
 					_clients[fd].addChannel(&chIt->second);
@@ -336,16 +347,37 @@ void	Server::commandJoin(std::string argument, int fd) {
 				sendMsg(RPL_473(_clients[fd].getNickName(), chIt->second.getChannelName()), fd);
                 continue;
             }
-
 			if (chIt->second.getIsKeyMode() ){
-					if (vecPassword.size() < i){
+					if (vecPassword.size() < i || vecPassword.empty()){
                         sendMsg(RPL_475(_clients[fd].getNickName(), chIt->second.getChannelName()), fd);
                         continue;
                     }
-					else if (chIt->second.getPassword() != vecPassword[i]){
+					else if (vecPassword.empty() || chIt->second.getPassword() != vecPassword[i]){
 							sendMsg(RPL_475(_clients[fd].getNickName(), chIt->second.getChannelName()), fd);
                         continue;
 					}
+			chIt->second.addClinetInChannel(fd, &_clients[fd], vecPassword[i]);
+			_clients[fd].addChannel(&chIt->second);
+			// :aa!aa@localhost JOIN :#zxcx
+			std::string joinMsg = ":" +_clients[fd].getNickName() + " JOIN " + chIt->second.getChannelName() + "\r\n";
+			sendMsgVector(joinMsg, chIt->second.getClientsFd());
+			// sendMsg(joinMsg, fd);
+			//353 366추가
+			std::vector<int> tmpChannelList = chIt->second.getClientsFd();
+			std::string clients_list = "";
+			for (std::vector<int>::iterator it = tmpChannelList.begin(); it != tmpChannelList.end(); it++)
+					clients_list = clients_list + _clients[*it].getNickName() + " ";
+			
+
+			sendMsg(RPL_353(_clients[fd].getNickName(), chIt->second.getChannelName(), clients_list), fd);
+			sendMsg(RPL_366(_clients[fd].getNickName(), chIt->second.getChannelName()), fd);
+			//353 366추가
+			std::string topic = chIt->second.getTopic();
+			if (topic != "")
+				sendMsg(RPL_332(_clients[fd].getNickName(), chIt->second.getChannelName(), topic), fd);
+			else
+				sendMsg(RPL_332(_clients[fd].getNickName(), chIt->second.getChannelName(), " NONE"), fd);
+				continue;
 			}
 			chIt->second.addClinetInChannel(fd, &_clients[fd], "");
 			_clients[fd].addChannel(&chIt->second);
@@ -363,7 +395,11 @@ void	Server::commandJoin(std::string argument, int fd) {
 			sendMsg(RPL_353(_clients[fd].getNickName(), chIt->second.getChannelName(), clients_list), fd);
 			sendMsg(RPL_366(_clients[fd].getNickName(), chIt->second.getChannelName()), fd);
 			//353 366추가
-			sendMsg(RPL_332(_clients[fd].getNickName(), chIt->second.getChannelName(), chIt->second.getTopic() == "" ? " * NONE * " : chIt->second.getTopic()), fd);
+			std::string topic = chIt->second.getTopic();
+			if (topic != "")
+				sendMsg(RPL_332(_clients[fd].getNickName(), chIt->second.getChannelName(), topic), fd);
+			else
+				sendMsg(RPL_332(_clients[fd].getNickName(), chIt->second.getChannelName(), " NONE"), fd);
 			//RPL_TOPIC (332): 채널의 토픽을 클라이언트에게 전달합니다. 채널의 토픽 정보를 알려주는 역할을 합니다.
 		}
 	}
@@ -640,13 +676,13 @@ void Server::commandInvite(std::string argument, int fd) {
 
 	//std::cout << nickName << "1    1" << channel << std::endl; //--주석처리--
 	
-	if (nickName == "" || channel == "") {// ERR_NEEDMOREPARAMS (461): 인자부족
+	if (nickName.length() == 0 || channel.length() == 0) {// ERR_NEEDMOREPARAMS (461): 인자부족
 		sendMsg(RPL_461(_clients[fd].getNickName(),"INVITE"),fd);
 		return ;
 }
 	Client *tmpClient = findClient(nickName);
 	// std::map<int ,Client>::iterator it = _clients.find(nic)
-//	std::cout << tmpClient->getNickName() << "1" << std::endl;
+	//std::cout << tmpClient->getNickName() << "1" << std::endl;
 	if (tmpClient == NULL) {//ERR_NOSUCHNICK (401): 초대할 클라이언트 없음
 		sendMsg(RPL_401(_clients[fd].getNickName(),nickName),fd);
 		return ;
@@ -684,7 +720,7 @@ void Server::commandTopic(std::string argument, int fd){
 	std::string			topic;
 
 	str >>channel >> topic;
-	if (channel == ""){
+	if (channel.length() == 0){
 		sendMsg(RPL_461(_clients[fd].getNickName(),"TOPIC") , fd);
 		return ;
 	} //ERR_NEEDMOREPARAMS (461): 매개변수 부족
@@ -695,8 +731,8 @@ void Server::commandTopic(std::string argument, int fd){
 	} //ERR_NOSUCHCHANNEL (403) 채널이없음
 	if (!chIt->second.isInClinet(fd)) //ERR_NOTONCHANNEL (442): 사용자가 채널에 없음
 		return ;
-	if (topic == "") {
-		if (chIt->second.getTopic() == ""){
+	if (topic.length() == 0) {
+		if (chIt->second.getTopic().length() == 0){
 		sendMsg(RPL_331(_clients[fd].getNickName(), channel) , fd);
 		return ;
 	}
