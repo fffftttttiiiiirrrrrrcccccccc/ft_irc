@@ -37,8 +37,8 @@ const static std::string version = "1_try ";
 #define RPL_341(client, nick, channel) (col_server_name + "341 " + client + \
 " " + nick + " " + channel + "\r\n")
 
-#define RPL_353(client, channel, symbol) (col_server_name + "353 " + client + \
-" " + channel + " :" + topic + "\r\n") // 구현 아직 못함, 채널에 있는 유저들 출력
+#define RPL_353(client, channel, symbol, clients) (col_server_name + "353 " + client + \
+" " + channel + " " + symbol + " " + channel + " " + clients + "\r\n") // 구현 아직 못함, 채널에 있는 유저들 출력
 
 #define RPL_366(client, channel) (col_server_name + "366 " + client + \
 " " + channel + " :End of /NAMES list\r\n")
