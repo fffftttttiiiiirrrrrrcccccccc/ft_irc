@@ -38,7 +38,7 @@ class Channel {
 		std::string getPassword();
 		std::vector<int> getClientsFd();
 		std::vector<int> getInviteList();
-		void	addClinetInChannel(int fd, Client* client, std::string password);
+		void	addClinetInChannel(int fd, Client* client);
 		void 	removeClinetInChannel(int fd);
 
 		void	setIsInviteOnly(bool isInviteOnly);

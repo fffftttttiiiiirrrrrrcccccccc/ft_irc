@@ -36,19 +36,10 @@ std::string Channel::getPassword() {
 	return _password;
 }
 
-void Channel::addClinetInChannel(int fd, Client* client, std::string password) {
-	std::map<int, Client *>::iterator it = _clients.find(fd);
-	if (it == _clients.end()) {
-		if (_isInviteOnly)
-			return ;
-		if (_isKey && _password != password)
-			return ;
-		if (_isLimit && _clients.size() == _LimitClientNum)
-			return ;
+void Channel::addClinetInChannel(int fd, Client* client) {
 		_clients[fd] = client;
 		if (_clients.size() == 1)
 			_opList.push_back(fd);
-	}
 }
 
 void Channel::removeClinetInChannel(int fd) {
@@ -100,7 +91,7 @@ void Channel::partClinet(int fd){
 }
 
 bool Channel::isOpClient(int fd){
-	std::vector<int>::iterator it = std::find(_opList.begin(), _opList.begin(), fd);
+	std::vector<int>::iterator it = std::find(_opList.begin(), _opList.end(), fd);
 	if (it == _opList.end())
 		return false;
 	return true;
@@ -109,11 +100,7 @@ bool Channel::isOpClient(int fd){
 bool Channel::isInClinet(int fd) {
 	std::map<int, Client *>::iterator it = _clients.find(fd);
 	if (it == _clients.end())
-	{
-		std::cout << "없다~~~" << std::endl;
 		return false;
-	}
-		
 	return true;
 }
 
