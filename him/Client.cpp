@@ -81,6 +81,9 @@ std::string Client::getUserName(){
 std::string Client::getPassword(){
 	return _password;
 }
+bool Client::get_isLogin(){
+	return _isLogin;
+}
 
 void Client::welcomeMsg(){
 	if (_nickName != "*" && _password != "" && _userName != "*" && !_isLogin){

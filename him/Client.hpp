@@ -37,6 +37,7 @@ class Client{
 		void setTmpCmd(std::string str);
 		void addTmpCmd(std::string str);
 		int getFd();
+		bool get_isLogin();
 		std::map<std::string, Channel *> getChannels();
 		std::string getNickName();
 		std::string getUserName();
