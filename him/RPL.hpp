@@ -10,6 +10,9 @@ const static std::string version = "1_try ";
 
 #define RPL_PARTMSG(nick, user, host, channel_name, part_msg_) ":" + nick + "!" + user + "@" + host + " " + "PART" + " " + channel_name + " :" + part_msg_ + "\r\n"
 
+#define RPL_QUIT(client, reason) (col_server_name + "QUIT " + client + \
+": " + reason + " \r\n")
+
 #define RPL_001(client) (col_server_name + "001 " + client + \
 " :Welcome to the Internet Relay Network " + client + "\r\n")
 

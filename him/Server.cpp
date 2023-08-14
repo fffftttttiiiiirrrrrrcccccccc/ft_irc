@@ -195,13 +195,17 @@ void	Server::get_command(std::string buffer, int fd) {
 		if (_password != _clients[fd].getPassword()){
 			if (command == "pass" || command == "PASS")
 				commandPass(argument, fd);
-			else
+			else{
 				sendMsg(RPL_464(_clients[fd].getNickName()), fd);
+				sendMsg("CheckIn command is |PASS| -> |NICK| -> |USER| \r\n", fd);
+			}
 		}else if (_clients[fd].getNickName() == "*"){
 			if (command == "pass" || command == "PASS")
 				commandPass(argument, fd);
 			else if (command == "nick" || command == "NICK")
 				commandNick(argument, fd);
+			else
+				sendMsg("CheckIn command is |PASS| -> |NICK| -> |USER| \r\n", fd);
 		} else if(_clients[fd].getUserName() == "*") {
 			if (command == "pass" || command == "PASS")
 				commandPass(argument, fd);
@@ -279,9 +283,32 @@ int Server::findPollfdIndex(int targetFd) {
     return -1; // Return -1 if the targetFd is not found in the vector
 }
 
-void	Server::commandQuit(std::string argument, int fd) {
-	exitClient(fd);
-	std::cout << fd << ": " << argument << std::endl;
+void    Server::commandQuit(std::string argument, int fd) {
+    // exitClient(fd);
+    std::istringstream  str(argument);
+    std::string         msg;
+    std::vector<int> fds;
+    str >> msg;
+
+    if (!msg.empty() && msg[0] == ':')
+        msg.erase(0);
+    std::map<std::string, Channel *> channelList = _clients[fd].getChannels();
+    for (std::map<std::string, Channel *>::iterator it = channelList.begin(); it != channelList.end(); it++){
+//        if (msg.length() >= 1)
+//            sendMsgVector(RPL_QUIT(_clients[fd].getNickName(), msg);
+//        else
+//            sendMsgVector(RPL_QUIT(_clients[fd].getNickName(), "");
+//        it->second.removeClinetInChannel(fd);
+//        fds = it->second.getClientsFd();
+            std::string tmp;
+            tmp = it->first + " " + msg;
+        commandPart(tmp, fd);
+    }
+    close(fd);
+    _clients.erase(fd);
+    int i = findPollfdIndex(fd);
+    _fds.erase(_fds.begin() + i);
+    // std::cout << fd << ": " << argument << std::endl;
 }
 
 void	Server::commandJoin(std::string argument, int fd) {
