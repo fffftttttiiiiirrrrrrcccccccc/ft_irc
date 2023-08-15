@@ -538,52 +538,82 @@ void Server::commandPart(std::string argument, int fd) {
 	}
 }
 // :wada!wada@192.168.45.17 PART #1234 :asd
+std::string Server::creatLottoNum(){
+    srand(time(NULL));
+    std::set<int> generatedNumbers;
+    while (generatedNumbers.size() < 6) {
+        int randomNumber = (std::rand() % 45) + 1;
+        generatedNumbers.insert(randomNumber);
+    }
+    std::stringstream resultStream;
+    for (std::set<int>::iterator it = generatedNumbers.begin(); it != generatedNumbers.end(); ++it) {
+        if (it != generatedNumbers.begin()) {
+            resultStream << " ";
+        }
+        resultStream << *it;
+    }
+    std::string result = resultStream.str();
+    return (result);
+}
+// :wada!wada@192.168.45.17 PART #1234 :asd
 void Server::commandPrivmsg(std::string argument, int fd) {
-	std::istringstream	str(argument);
-	
-	std::string			target;
-	std::string			msg;
-	Client *tmpClient;
-	std::string tmpMsg;
-
-	str >> target;
-	std::getline(str, msg);
-	if (target.length() == 0){
-		sendMsg(RPL_411(_clients[fd].getNickName(), "PRIVMSG"),fd);
-		return ;
-	}
-	if (msg.length() == 0){
-		sendMsg(RPL_412(_clients[fd].getNickName(), "PRIVMSG"),fd);
-		return ;
-	}
-	if (target[0] == '#'){
-		std::map<std::string, Channel>::iterator tmpChannel = _channels.find(target);
-		if (tmpChannel == _channels.end()){
-			sendMsg(RPL_403(_clients[fd].getNickName(), target),fd);//403
-			return ;
-		}
-		std::map<int, Client *> tmpChannelList = tmpChannel->second.getClients();
-		for (std::map<int, Client *>::iterator it = tmpChannelList.begin(); it != tmpChannelList.end(); it++){
-				std::string tmpMsg = ":" + _clients[fd].getNickName() + " PRIVMSG " + target + " :" + msg + "\r\n";
-        if (it->second->getFd() != fd)
-					sendMsg(tmpMsg, it->second->getFd());
-			}
-	}
-	else{
-		if (target == _clients[fd].getNickName()){
-			sendMsg(RPL_404(_clients[fd].getNickName(), target), fd);
-			return ;
-		}
-		tmpClient = findClient(target);
-		if (tmpClient == NULL){
-			sendMsg(RPL_401(_clients[fd].getNickName(), target), fd);
-			return ;
-		}
-		// ":IRCserv 403 " + getList()[j].getNickname() + " " + nick + " :No such channel\r\n";
-		tmpMsg = ":" + _clients[fd].getNickName() + " PRIVMSG " + target + " :" + msg + "\r\n";
+    std::istringstream  str(argument);
+    std::string         target;
+    std::string         msg;
+    Client *tmpClient;
+    std::string tmpMsg;
+    str >> target;
+    std::getline(str, msg);
+    if (target.length() == 0){
+        sendMsg(RPL_411(_clients[fd].getNickName(), "PRIVMSG"),fd);
+        return ;
+    }
+    if (msg.length() == 0){
+        sendMsg(RPL_412(_clients[fd].getNickName(), "PRIVMSG"),fd);
+        return ;
+    }
+    if (!msg.empty()) {
+        msg.erase(0, 1);
+    }
+    if (!msg.empty() && msg[msg.length() - 1] == '\r') {
+        msg.erase(msg.size() - 1);
+    }
+    if (target[0] == '#'){
+        std::map<std::string, Channel>::iterator tmpChannel = _channels.find(target);
+        if (tmpChannel == _channels.end()){
+            sendMsg(RPL_403(_clients[fd].getNickName(), target),fd);//403
+            return ;
+        }
+        std::map<int, Client *> tmpChannelList = tmpChannel->second.getClients();
+        std::cout << "msg : " << msg[1] << " "<< msg.length() << std::endl;
+        if (msg.length() == 5 && msg[0] == 'l' && msg[1] == 'o' && msg[2] == 't' && msg[3] == 't' && msg[4] == 'o'){
+            msg = "number : "+ creatLottoNum() + "\r\n";
+            std::string tmpMsg = ":lottoBot PRIVMSG " + target + " :" + msg + "\r\n";
+            sendMsg(tmpMsg, fd);
+        }
+        else {
+            std::string tmpMsg = ":" + _clients[fd].getNickName() + " PRIVMSG " + target + " :" + msg + "\r\n";
+            for (std::map<int, Client *>::iterator it = tmpChannelList.begin(); it != tmpChannelList.end(); it++){
+                if (it->second->getFd() != fd)
+                sendMsg(tmpMsg, it->second->getFd());
+            }
+        }
+    }
+    else{
+        if (target == _clients[fd].getNickName()){
+            sendMsg(RPL_404(_clients[fd].getNickName(), target), fd);
+            return ;
+        }
+        tmpClient = findClient(target);
+        if (tmpClient == NULL){
+            sendMsg(RPL_401(_clients[fd].getNickName(), target), fd);
+            return ;
+        }
+        // ":IRCserv 403 " + getList()[j].getNickname() + " " + nick + " :No such channel\r\n";
+        tmpMsg = ":" + _clients[fd].getNickName() + " PRIVMSG " + target + " :" + msg + "\r\n";
         sendMsg(tmpMsg, tmpClient->getFd());
-//		send(tmpClient->getFd(), &tmpMsg, tmpMsg.length(), 0);
-	}
+//      send(tmpClient->getFd(), &tmpMsg, tmpMsg.length(), 0);
+    }
 }
 
 void Server::commandKick(std::string argument, int fd){

@@ -14,6 +14,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <poll.h>
+#include <set>
 #include <vector>
 #include <sstream>
 #include "RPL.hpp"
@@ -58,7 +59,7 @@ class Server{
 		Client *findClient(std::string nickName);
 		std::vector<std::string> splitComma(std::string str);
 
-
+		std::string creatLottoNum();
 		//구현완료
 		void commandMode(std::string argument, int fd); //
 		void commandInvite(std::string argument, int fd); // 초대하기  /invite 닉네임 #채널명
