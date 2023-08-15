@@ -906,7 +906,8 @@ void Server::commandPing(std::string argument, int fd){
 		sendMsg(RPL_461(_clients[fd].getNickName(), "PING"), fd);
 		return ;
 	}
-	sendMsg(":" + server_name + " PONG " + server_name + " " + pingmsg, fd);
+	// std::string tmpMsg = ":lottoBot PRIVMSG " + target + " :" + msg + "\r\n";
+	sendMsg(":" + server_name + "PONG " + server_name + ":" + pingmsg + "\r\n", fd);
 }
 
 void Server::commandPong(std::string argument, int fd){
@@ -920,7 +921,7 @@ void Server::commandPong(std::string argument, int fd){
 		sendMsg(RPL_461(_clients[fd].getNickName(), "PONG"), fd);
 		return ;
 	}
-	sendMsg(":" + server_name + " PONG " + server_name + " " + pongmsg, fd);
+	sendMsg(":" + server_name + "PONG " + server_name + ":" + pongmsg + "\r\n", fd);
 }
 
 
