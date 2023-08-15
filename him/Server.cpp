@@ -22,10 +22,20 @@ int Server::getSocket() {
 }
 
 void Server::sendMsg(std::string msg, int fd){
+	if (msg.length() >= 2 &&
+        msg[msg.length() - 2] != '\r' &&
+        msg[msg.length() - 1] != '\n') {
+        msg += "\r\n";
+    }
 	send(fd, msg.c_str(), msg.size(), 0);
 }
 
 void Server::sendMsgVector(std::string msg, std::vector<int> fd){
+	if (msg.length() >= 2 &&
+        msg[msg.length() - 2] != '\r' &&
+        msg[msg.length() - 1] != '\n') {
+        msg += "\r\n";
+    }
 	for (std::vector<int>::iterator it = fd.begin(); it != fd.end(); it++)
 		send(*it, msg.c_str(), msg.size(), 0);
 	std::cout << std::endl;
@@ -93,6 +103,7 @@ std::vector<struct pollfd> Server::getPollfd() {
 void	Server::runServer() {
 	int ret = 0;
 	while (1) {
+		std::cout << std::endl;
 		ret = poll(&_fds.front(), _fds.size(), -1);
 		if (ret < 0) {
 			std::cout << "Poll error" << std::endl;
@@ -585,7 +596,6 @@ void Server::commandPrivmsg(std::string argument, int fd) {
             return ;
         }
         std::map<int, Client *> tmpChannelList = tmpChannel->second.getClients();
-        std::cout << "msg : " << msg[1] << " "<< msg.length() << std::endl;
         if (msg.length() == 5 && msg[0] == 'l' && msg[1] == 'o' && msg[2] == 't' && msg[3] == 't' && msg[4] == 'o'){
             msg = "number : "+ creatLottoNum() + "\r\n";
             std::string tmpMsg = ":lottoBot PRIVMSG " + target + " :" + msg + "\r\n";

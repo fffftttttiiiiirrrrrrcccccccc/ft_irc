@@ -29,12 +29,16 @@ void signal_handler(int signo)
 int main(int ac, char** av){
 	signal(SIGINT, signal_handler);
 	if (ac != 3) {
-		std::cout << "Error : Too low arguments" << std::endl;
+		std::cout << "Error : Arguments error" << std::endl;
 		return (1);
 	}
 	int tmp_port_num = atoi(av[1]);
 	if (tmp_port_num < 1024 || tmp_port_num > 65535){
 		std::cout << "Numeric port number " << std::endl;
+		return (1);
+	}
+	if (strlen(av[2]) < 4){
+		std::cout << "Error : Arguments error" << std::endl;
 		return (1);
 	}
 	server.serverInit(tmp_port_num, av[2]);
