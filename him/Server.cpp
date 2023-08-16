@@ -301,8 +301,8 @@ void    Server::commandQuit(std::string argument, int fd) {
     std::vector<int> fds;
     str >> msg;
 
-    if (!msg.empty() && msg[0] == ':')
-        msg.erase(0);
+    // if (!msg.empty() && msg[0] == ':')
+    //     msg.erase(0);
     std::map<std::string, Channel *> channelList = _clients[fd].getChannels();
     for (std::map<std::string, Channel *>::iterator it = channelList.begin(); it != channelList.end(); it++){
 //        if (msg.length() >= 1)
@@ -397,7 +397,7 @@ void	Server::commandJoin(std::string argument, int fd) {
 			chIt->second.addClinetInChannel(fd, &_clients[fd]);
 			_clients[fd].addChannel(&chIt->second);
 			// :aa!aa@localhost JOIN :#zxcx
-			std::string joinMsg = ":" +_clients[fd].getNickName() + " JOIN " + chIt->second.getChannelName() + "\r\n";
+			std::string joinMsg = ":" +_clients[fd].getNickName() + "!test1@127.0.0.1 JOIN :" + chIt->second.getChannelName() + "\r\n";
 			sendMsgVector(joinMsg, chIt->second.getClientsFd());
 			// sendMsg(joinMsg, fd);
 			//353 366추가

@@ -5,10 +5,10 @@
 
 
 const static std::string server_name = "irccc ";
-const static std::string col_server_name = ":irccc ";
+const static std::string col_server_name = ":127.0.0.1 ";
 const static std::string version = "1_try ";
 
-#define RPL_PARTMSG(nick, user, host, channel_name, part_msg_) ":" + nick + "!" + user + "@" + host + " " + "PART" + " " + channel_name + " :" + part_msg_ + "\r\n"
+#define RPL_PARTMSG(nick, user, host, channel_name, part_msg_) ":" + nick + "!" + user + "@" + host + " " + "PART" + " " + channel_name + " " + part_msg_ + "\r\n"
 
 #define RPL_QUIT(client, reason) (col_server_name + "QUIT " + client + \
 ": " + reason + " \r\n")
