@@ -349,7 +349,7 @@ void	Server::commandJoin(std::string argument, int fd) {
 			sendMsg(joinMsg, fd);
 			//353 366추가
 			sendMsg(RPL_332(_clients[fd].getNickName(), vecChannel[i], " NONE "), fd);
-			sendMsg(RPL_353(_clients[fd].getNickName(), vecChannel[i], _clients[fd].getNickName() ), fd);
+			sendMsg(RPL_353(_clients[fd].getNickName(), vecChannel[i], "@" + _clients[fd].getNickName() ), fd);
 			sendMsg(RPL_366(_clients[fd].getNickName(), vecChannel[i]), fd);
 			//353 366추가
 			//sendMsg(RPL_332(_clients[fd].getNickName(), vecChannel[i], newChannel.getTopic()), fd);
@@ -379,14 +379,19 @@ void	Server::commandJoin(std::string argument, int fd) {
 					_clients[fd].addChannel(&chIt->second);
 					std::string joinMsg = ":" +_clients[fd].getNickName() + " JOIN " + chIt->second.getChannelName() + "\r\n";
 					sendMsgVector(joinMsg, chIt->second.getClientsFd());
-					//353 366추가
+					// 366추가
 					std::vector<int> tmpChannelList = chIt->second.getClientsFd();
 					std::string clients_list = "";
 					for (std::vector<int>::iterator it = tmpChannelList.begin(); it != tmpChannelList.end(); it++)
+					{	
+						if (!chIt->second.isOpClient(*it))
 							clients_list = clients_list + _clients[*it].getNickName() + " ";
+						else
+							clients_list = clients_list +"@" + _clients[*it].getNickName() + " ";
+					}
 					sendMsg(RPL_353(_clients[fd].getNickName(), channel, clients_list), fd);
 					sendMsg(RPL_366(_clients[fd].getNickName(), channel), fd);
-					//353 366추가
+					// 366추가
 
 					sendMsg(RPL_332(_clients[fd].getNickName(), chIt->second.getChannelName(), chIt->second.getTopic() == "" ? " * NONE * " : chIt->second.getTopic()), fd);
                     continue ;
@@ -400,16 +405,19 @@ void	Server::commandJoin(std::string argument, int fd) {
 			std::string joinMsg = ":" +_clients[fd].getNickName() + "!test1@127.0.0.1 JOIN " + chIt->second.getChannelName() + "\r\n";
 			sendMsgVector(joinMsg, chIt->second.getClientsFd());
 			// sendMsg(joinMsg, fd);
-			//353 366추가
+			// 366추가
 			std::vector<int> tmpChannelList = chIt->second.getClientsFd();
 			std::string clients_list = "";
 			for (std::vector<int>::iterator it = tmpChannelList.begin(); it != tmpChannelList.end(); it++)
+			{	
+				if (!chIt->second.isOpClient(*it))
 					clients_list = clients_list + _clients[*it].getNickName() + " ";
-			
-
+				else
+					clients_list = clients_list +"@" + _clients[*it].getNickName() + " ";
+			}
 			sendMsg(RPL_353(_clients[fd].getNickName(), chIt->second.getChannelName(), clients_list), fd);
 			sendMsg(RPL_366(_clients[fd].getNickName(), chIt->second.getChannelName()), fd);
-			//353 366추가
+			// 366추가
 			std::string topic = chIt->second.getTopic();
 			if (topic != "")
 				sendMsg(RPL_332(_clients[fd].getNickName(), chIt->second.getChannelName(), topic), fd);
@@ -849,7 +857,7 @@ void Server::commandMode(std::string argument, int fd) {
 				return ;
 		} //ERR_USERNOTINCHANNEL (441): 클라이언트가 없음.
 			chIt->second.addOpClinet(tmpClient->getFd());
-			sendMsg(":irccc MODE " + channel + " " + mode + " " + _clients[tmpClient->getFd()].getNickName() + "\r\n", fd);
+			sendMsgVector(":irccc MODE " + channel + " " + mode + " " + _clients[tmpClient->getFd()].getNickName() + "\r\n", chIt->second.getClientsFd());
 		}
 		else if (mode[1] == 'l') {
 			chIt->second.setIsLimit(true);
@@ -887,7 +895,7 @@ void Server::commandMode(std::string argument, int fd) {
 				return ;
 		} //ERR_USERNOTINCHANNEL (441): 클라이언트가 없음.
 			chIt->second.removeOpClient(tmpClient->getFd());
-			sendMsg(":irccc MODE " + channel + " " + mode + " " + _clients[tmpClient->getFd()].getNickName() + "\r\n", fd);
+			sendMsgVector(":irccc MODE " + channel + " " + mode + " " + _clients[tmpClient->getFd()].getNickName() + "\r\n", chIt->second.getClientsFd());
 		}
 		else if (mode[1] == 'l'){
 			chIt->second.setIsLimit(false);
