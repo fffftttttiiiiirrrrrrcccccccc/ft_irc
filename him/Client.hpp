@@ -18,12 +18,13 @@ class Client{
 		std::string _realName;
 		std::string _password;
 		int				_fd;
-		std::string _tmpCmd;
+		
 		bool			_isLogin;
 		// Client(const Client& src);
 
 	public:
 		std::string _sendBuffer;
+		std::string _cmdBuffer;
 		Client();
 		// Client &operator=(const Client& rhs);
 		virtual ~Client();
@@ -52,14 +53,6 @@ class Client{
 		void addChannel(Channel *channel);
 		bool findChannel(std::string channelName);
 		bool removeChannel(std::string channelName);
-
-
-		//join
-		//
-
-		
-
-
 };
 
 #endif

@@ -145,11 +145,13 @@ void	Server::runServer() {
 				memset(buffer, 0, 1024);
 				ret = recv(pollIt->fd, buffer, 1024, 0);
 				if (ret == -1){
-					close(pollIt->fd);
-					close(_serverSocket);
-					_clients.erase(pollIt->fd);
-					std::cout << "recv function failed" << std::endl;
-					exit(1);
+					_clients[pollIt->fd]._cmdBuffer.clear();
+					continue;
+					// close(pollIt->fd);
+					// close(_serverSocket);
+					// _clients.erase(pollIt->fd);
+					// std::cout << "recv function failed" << std::endl;
+					// exit(1);
 				}
 				else if (ret == 0){
 					commandQuit("ByeBye",pollIt->fd);
@@ -182,24 +184,32 @@ void	Server::runServer() {
 
 void	Server::get_command(std::string buffer, int fd) {
 
-	if (buffer.length() >= 2) {
-		if (buffer[buffer.length() - 2] != '\r' && buffer[buffer.length() - 1] != '\n') {
-			// std::cout << buffer << std::endl;
-			_clients[fd].addTmpCmd(buffer);
-			return ;
-		}
-		else if (_clients[fd].getTmpCmd() != "") {
-			_clients[fd].addTmpCmd(buffer);
-			buffer = _clients[fd].getTmpCmd();
-			_clients[fd].setTmpCmd("");
-		}
-	}
-	else if (_clients[fd].getTmpCmd() != "") {
-		_clients[fd].addTmpCmd(buffer);
-		buffer = _clients[fd].getTmpCmd();
-		_clients[fd].setTmpCmd("");
-	}
-	std::istringstream	str(buffer);
+	_clients[fd]._cmdBuffer += buffer;
+	std::string commandLine;
+	size_t	position = _clients[fd]._cmdBuffer.find("\r\n");
+	if (position == std::string::npos)
+		return ;
+	commandLine = _clients[fd]._cmdBuffer.substr(0, position + 2);
+	_clients[fd]._cmdBuffer.erase(0, position + 2);
+
+	// if (buffer.length() >= 2) {
+	// 	if (buffer[buffer.length() - 2] != '\r' && buffer[buffer.length() - 1] != '\n') {
+	// 		// std::cout << buffer << std::endl;
+	// 		_clients[fd].addTmpCmd(buffer);
+	// 		return ;
+	// 	}
+	// 	else if (_clients[fd].getTmpCmd() != "") {
+	// 		_clients[fd].addTmpCmd(buffer);
+	// 		buffer = _clients[fd].getTmpCmd();
+	// 		_clients[fd].setTmpCmd("");
+	// 	}
+	// }
+	// else if (_clients[fd].getTmpCmd() != "") {
+	// 	_clients[fd].addTmpCmd(buffer);
+	// 	buffer = _clients[fd].getTmpCmd();
+	// 	_clients[fd].setTmpCmd("");
+	// }
+	std::istringstream	str(commandLine);
 	std::string			command;
 	std::string			argument;
 	while (std::getline(str, command, ' ')){

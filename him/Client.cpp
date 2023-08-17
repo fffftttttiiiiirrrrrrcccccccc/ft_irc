@@ -13,7 +13,7 @@ void Client::initClient(int fd) {
 	_serverName = "*";
 	_realName = "*";
 	_password = "";
-	_tmpCmd = "";
+	_cmdBuffer = "";
 	_isLogin = false;
 }
 
@@ -37,11 +37,11 @@ std::string Client::getRealName(){
 }
 
 void Client::setTmpCmd(std::string str) {
-	_tmpCmd = str;
+	_cmdBuffer = str;
 }
 
 void Client::addTmpCmd(std::string str) {
-	_tmpCmd += str + " ";
+	_cmdBuffer += str + " ";
 }
 
 void Client::setNickName(std::string str){
@@ -69,7 +69,7 @@ std::map<std::string, Channel *> Client::getChannels() {
 	return _clientChannels;
 }
 std::string Client::getTmpCmd(){
-	return _tmpCmd;
+	return _cmdBuffer;
 }
 
 std::string Client::getNickName(){
@@ -111,3 +111,6 @@ bool Client::removeChannel(std::string channelName){
 	_clientChannels.erase(it);
 	return true;
 }
+
+
+
