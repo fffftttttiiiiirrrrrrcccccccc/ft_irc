@@ -397,7 +397,7 @@ void	Server::commandJoin(std::string argument, int fd) {
 			chIt->second.addClinetInChannel(fd, &_clients[fd]);
 			_clients[fd].addChannel(&chIt->second);
 			// :aa!aa@localhost JOIN :#zxcx
-			std::string joinMsg = ":" +_clients[fd].getNickName() + "!test1@127.0.0.1 JOIN :" + chIt->second.getChannelName() + "\r\n";
+			std::string joinMsg = ":" +_clients[fd].getNickName() + "!test1@127.0.0.1 JOIN " + chIt->second.getChannelName() + "\r\n";
 			sendMsgVector(joinMsg, chIt->second.getClientsFd());
 			// sendMsg(joinMsg, fd);
 			//353 366추가
@@ -602,7 +602,7 @@ void Server::commandPrivmsg(std::string argument, int fd) {
             sendMsg(tmpMsg, fd);
         }
         else {
-            std::string tmpMsg = ":" + _clients[fd].getNickName() + " PRIVMSG " + target + " :" + msg + "\r\n";
+            std::string tmpMsg = ":" + _clients[fd].getNickName() + " PRIVMSG " + target + " " + msg + "\r\n";
             for (std::map<int, Client *>::iterator it = tmpChannelList.begin(); it != tmpChannelList.end(); it++){
                 if (it->second->getFd() != fd)
                 sendMsg(tmpMsg, it->second->getFd());
@@ -620,7 +620,7 @@ void Server::commandPrivmsg(std::string argument, int fd) {
             return ;
         }
         // ":IRCserv 403 " + getList()[j].getNickname() + " " + nick + " :No such channel\r\n";
-        tmpMsg = ":" + _clients[fd].getNickName() + " PRIVMSG " + target + " :" + msg + "\r\n";
+        tmpMsg = ":" + _clients[fd].getNickName() + " PRIVMSG " + target + " " + msg + "\r\n";
         sendMsg(tmpMsg, tmpClient->getFd());
 //      send(tmpClient->getFd(), &tmpMsg, tmpMsg.length(), 0);
     }
@@ -917,7 +917,7 @@ void Server::commandPing(std::string argument, int fd){
 		return ;
 	}
 	// std::string tmpMsg = ":lottoBot PRIVMSG " + target + " :" + msg + "\r\n";
-	sendMsg(":" + server_name + "PONG " + server_name + ":" + pingmsg + "\r\n", fd);
+	sendMsg(":" + server_name + "PONG " + server_name + " " + pingmsg + "\r\n", fd);
 }
 
 void Server::commandPong(std::string argument, int fd){
@@ -931,7 +931,7 @@ void Server::commandPong(std::string argument, int fd){
 		sendMsg(RPL_461(_clients[fd].getNickName(), "PONG"), fd);
 		return ;
 	}
-	sendMsg(":" + server_name + "PONG " + server_name + ":" + pongmsg + "\r\n", fd);
+	sendMsg(":" + server_name + "PONG " + server_name + " " + pongmsg + "\r\n", fd);
 }
 
 
