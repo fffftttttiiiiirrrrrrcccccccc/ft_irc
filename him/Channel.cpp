@@ -162,12 +162,8 @@ std::string Channel::getChannelName(){
 
 std::vector<int> Channel::getClientsFd(){
 	std::vector<int> ret;
-	std::cout << std::endl;
-	std::cout << _channelName << " fd list : ";
 	for (std::map<int, Client *>::iterator it = _clients.begin(); it != _clients.end(); it++ ){
 		ret.push_back(it->first);
-		std::cout << it->first;
 	}
-	std::cout << std::endl;
 	return ret;
 }

@@ -42,8 +42,8 @@ class Server{
 		void serverInit(int port, char* pass);
 		Server &operator=(const Server &rhs);
 		void signal_handler(int signo);
-		void sendMsg(std::string msg, int fd);
-		void sendMsgVector(std::string msg, std::vector<int> fd);
+		void addBuffer(std::string msg, int fd);
+		void addBufferVector(std::string msg, std::vector<int> fd);
 
 		void	sockCreat();
 		int		getSocket();

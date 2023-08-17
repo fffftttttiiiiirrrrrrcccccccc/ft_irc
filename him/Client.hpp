@@ -23,6 +23,7 @@ class Client{
 		// Client(const Client& src);
 
 	public:
+		std::string _sendBuffer;
 		Client();
 		// Client &operator=(const Client& rhs);
 		virtual ~Client();
