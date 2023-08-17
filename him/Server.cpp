@@ -145,7 +145,7 @@ void	Server::runServer() {
 					exit(1);
 				}
 				else if (ret == 0){
-					exitClient(pollIt->fd);
+					commandQuit("ByeBye",pollIt->fd);
 					// std::map<int, Client>::iterator it = _clients.find(pollIt->fd);
 					// std::cout << "Disconnet client" << _clients[pollIt->fd].getNickName() << std::endl;
 					// _clients.erase(it);
