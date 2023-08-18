@@ -141,8 +141,8 @@ void	Server::runServer() {
 			for (unsigned long i = 1; i < _fds.size(); i++) {
 				pollIt++;
 				if (pollIt->revents & POLLIN) {
-					char buffer[1024];
-					memset(buffer, 0, 1024);
+					char buffer[1025];
+					memset(buffer, 0, 1025);
 					ret = recv(pollIt->fd, buffer, 1024, 0);
 					if (ret == -1){
 						_clients[pollIt->fd]._cmdBuffer.clear();
