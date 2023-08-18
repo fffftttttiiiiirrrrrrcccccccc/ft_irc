@@ -139,48 +139,48 @@ void	Server::runServer() {
 		}
 		std::vector<pollfd>::iterator pollIt = _fds.begin();
 			for (unsigned long i = 1; i < _fds.size(); i++) {
-			pollIt++;
-			if (pollIt->revents & POLLIN) {
-				char buffer[1024];
-				memset(buffer, 0, 1024);
-				ret = recv(pollIt->fd, buffer, 1024, 0);
-				if (ret == -1){
-					_clients[pollIt->fd]._cmdBuffer.clear();
-					continue;
-					// close(pollIt->fd);
-					// close(_serverSocket);
-					// _clients.erase(pollIt->fd);
-					// std::cout << "recv function failed" << std::endl;
-					// exit(1);
-				}
-				else if (ret == 0){
-					commandQuit("ByeBye",pollIt->fd);
-					// std::map<int, Client>::iterator it = _clients.find(pollIt->fd);
-					// std::cout << "Disconnet client" << _clients[pollIt->fd].getNickName() << std::endl;
-					// _clients.erase(it);
-					// close(pollIt->fd);
-					// _fds.erase(pollIt);
-					continue;
-					// client 삭제하는 함수 구현. exit 찍으면 안됨.
-					// exit(1);
-				}
-				else {
+				pollIt++;
+				if (pollIt->revents & POLLIN) {
+					char buffer[1024];
+					memset(buffer, 0, 1024);
+					ret = recv(pollIt->fd, buffer, 1024, 0);
+					if (ret == -1){
+						_clients[pollIt->fd]._cmdBuffer.clear();
+						continue;
+						// close(pollIt->fd);
+						// close(_serverSocket);
+						// _clients.erase(pollIt->fd);
+						// std::cout << "recv function failed" << std::endl;
+						// exit(1);
+					}
+					else if (ret == 0){
+						commandQuit("ByeBye",pollIt->fd);
+						// std::map<int, Client>::iterator it = _clients.find(pollIt->fd);
+						// std::cout << "Disconnet client" << _clients[pollIt->fd].getNickName() << std::endl;
+						// _clients.erase(it);
+						// close(pollIt->fd);
+						// _fds.erase(pollIt);
+						continue;
+						// client 삭제하는 함수 구현. exit 찍으면 안됨.
+						// exit(1);
+					}
+					else {
 						buffer[ret] = '\0';
 						get_command(buffer, pollIt->fd);
 						// write(_fds[i].fd, buffer, ret);
 						// printClientList();
 						// printChannelList();
 						// std::cout << "Get socket data : " << buffer << std::endl;
+					}
 				}
-			}
-			if (pollIt->revents & POLLOUT && !_clients[pollIt->fd]._sendBuffer.empty()){
-				ssize_t nbyte = send(pollIt->fd, _clients[pollIt->fd]._sendBuffer.c_str(), _clients[pollIt->fd]._sendBuffer.size(), 0);
-				_clients[pollIt->fd]._sendBuffer.erase(0, nbyte);
-				// sendMessage();
+				else if (pollIt->revents & POLLOUT && !_clients[pollIt->fd]._sendBuffer.empty()){
+					ssize_t nbyte = send(pollIt->fd, _clients[pollIt->fd]._sendBuffer.c_str(), _clients[pollIt->fd]._sendBuffer.size(), 0);
+					_clients[pollIt->fd]._sendBuffer.erase(0, nbyte);
+					// sendMessage();
+				}
 			}
 		}
 	}
-}
 
 void	Server::get_command(std::string buffer, int fd) {
 
